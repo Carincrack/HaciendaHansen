@@ -1,0 +1,139 @@
+/* Vaccine Form Styling */
+.vaccine-form {
+    background-color: var(--color-bg-light);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-soft);
+    color: var(--color-text);
+}
+
+.vaccine-form .form-group {
+    margin-bottom: 15px;
+}
+
+.vaccine-form label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.vaccine-form select,
+.vaccine-form input[type="date"],
+.vaccine-form input[type="text"],
+.vaccine-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    transition: border-color var(--transition-speed) ease;
+}
+
+.vaccine-form select:focus,
+.vaccine-form input[type="date"]:focus,
+.vaccine-form input[type="text"]:focus,
+.vaccine-form textarea:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.vaccine-form textarea {
+    height: 80px;
+    resize: vertical;
+}
+
+.vaccine-form .btn-reset,
+.vaccine-form .btn-cancel,
+.vaccine-form .btn-save {
+    padding: 8px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+}
+
+.vaccine-form .btn-reset {
+    background-color: var(--color-primary);
+    color: var(--color-text-white);
+}
+
+.vaccine-form .btn-cancel {
+    background-color: var(--color-error);
+    color: var(--color-text-white);
+}
+
+.vaccine-form .btn-save {
+    background-color: var(--color-success);
+    color: var(--color-text-white);
+}
+
+.vaccine-form .btn-reset:hover,
+.vaccine-form .btn-cancel:hover,
+.vaccine-form .btn-save:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--shadow-soft);
+}
+
+/* Confirmation Modal Styling */
+.confirmation-modal {
+    background-color: var(--color-bg-light);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 400px;
+    box-shadow: var(--shadow-soft);
+    text-align: center;
+    color: var(--color-text);
+}
+
+.confirmation-modal p {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.confirmation-modal .btn-confirm-yes,
+.confirmation-modal .btn-confirm-no {
+    padding: 8px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+}
+
+.confirmation-modal .btn-confirm-yes {
+    background-color: var(--color-success);
+    color: var(--color-text-white);
+}
+
+.confirmation-modal .btn-confirm-no {
+    background-color: var(--color-error);
+    color: var(--color-text-white);
+}
+
+.confirmation-modal .btn-confirm-yes:hover,
+.confirmation-modal .btn-confirm-no:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--shadow-soft);
+}
+
+/* Ensure overlay is consistent */
+.form-overlay,
+.confirmation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/*----------*/

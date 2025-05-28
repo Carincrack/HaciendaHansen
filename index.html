@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <!-- Metadatos y recursos externos -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Ganadera - Hacienda Hansen</title>
+
+    <!-- Hojas de estilo locales -->
+     <link rel="stylesheet" href="css/VaccineForm.css">
+    <link rel="stylesheet" href="css/StyleTosty.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="css/keypad.css">
+    <link rel="stylesheet" href="css/system.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/buttom.css">
+    <link rel="stylesheet" href="css/table.css">
+
+    <link rel="stylesheet" href="Subasta/graficStyle.css">
+    <!-- Iconos de Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Video de fondo -->
+    <video id="video-player" autoplay muted playsinline>
+        <source src="" type="video/mp4">
+    </video>
+
+    <!-- Contenedor principal -->
+    <div id="app-container">
+
+        <!-- Logo e identificación del sistema -->
+        <div class="logo-container">
+            <img id="logo" src="logos/WhatsApp Image 2024-02-21 at 4.12.44 PM.png" alt="Logo Gestión Ganadera">
+            <h2>Hacienda Hansen</h2>
+        </div>
+
+        <!-- Contenedor del teclado (PIN de acceso) -->
+        <div class="container">
+            <div id="keypad-overlay">
+                <div class="keypad-section">
+
+                    <!-- Encabezado del teclado -->
+                    <div class="keypad-header">
+                        <p>Introduzca su código de acceso</p>
+                    </div>
+
+                    <!-- Visualización de los puntos del PIN -->
+                    <div class="pin-display">
+                        <div class="pin-dots">
+                            <span class="pin-dot" id="dot-1"></span>
+                            <span class="pin-dot" id="dot-2"></span>
+                            <span class="pin-dot" id="dot-3"></span>
+                            <span class="pin-dot" id="dot-4"></span>
+                            <span class="pin-dot" id="dot-5"></span>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje informativo -->
+                    <p id="message-display">Ingrese PIN</p>
+
+                    <!-- Botones del teclado -->
+                    <div class="keypad">
+                        <button class="key" data-key="1">1</button>
+                        <button class="key" data-key="2">2</button>
+                        <button class="key" data-key="3">3</button>
+                        <button class="key" data-key="4">4</button>
+                        <button class="key" data-key="5">5</button>
+                        <button class="key" data-key="6">6</button>
+                        <button class="key" data-key="7">7</button>
+                        <button class="key" data-key="8">8</button>
+                        <button class="key" data-key="9">9</button>
+                        <button class="key action-key" data-key="clear">BORRAR</button>
+                        <button class="key" data-key="0">0</button>
+                        <button class="key action-key" data-key="enter">OK</button>
+                    </div>
+
+                    <!-- Información de la versión -->
+                    <div class="footer-info">
+                        <p>SISTEMA DE GESTIÓN vbeta 0.0.1</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido principal (oculto inicialmente hasta ingresar PIN) -->
+        <main id="main-content" class="hidden">
+
+            <!-- Encabezado del sistema -->
+            <header class="header">
+
+
+                <!-- Información del usuario -->
+                <div class="user-info">
+
+                    <img src="logos/WhatsApp Image 2024-02-21 at 4.12.44 PM.png" alt="Logo Gestión Ganadera"
+                        class="header-logo">
+                    <span id="123"></span>
+
+                    <button id="logout-btn" title="Cerrar sesión">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                    <samp>Cerrar Seccion</samp>
+               
+
+
+                </div>
+
+
+
+            </header>
+
+            <!-- Menú de navegación lateral -->
+            <nav class="nav">
+                <div class="menu-title">Menú Principal</div>
+                <ul class="menu-list">
+                    <li class="menu-item active" data-section="dashboard">
+                        <a href="#dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-section="ganado">
+                        <a href="#ganado">
+                            <i class="fas fa-cow"></i>
+                            <span>Ganado</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-section="sanidad">
+                        <a href="#sanidad">
+                            <i class="fas fa-heartbeat"></i>
+                            <span>Sanidad</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-section="produccion">
+                        <a href="#produccion">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Estadisticas</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-section="reportes">
+                        <a href="#reportes">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Reportes</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-section="configuracion">
+                        <a href="#configuracion">
+                            <i class="fas fa-cog"></i>
+                            <span>Configuración</span>
+                        </a>
+                    </li>
+                    <!--
+                     <li class="menu-item" data-section="admin">
+                        <a href="#admin">
+                            <i class="fa-solid fa-fingerprint"></i></i>
+                            <span>Admin</span>
+                        </a>
+                    </li>-->
+                </ul>
+            </nav>
+
+            <!-- Contenido de las secciones -->
+            <aside class="aside">
+
+                <!-- Sección Dashboard -->
+                <div id="dashboard" class="section active">
+                    <h2 class="section-title">Dashboard</h2>
+                    <div class="stats-container">
+                        <!-- Tarjeta de Total de Ganado -->
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-cow"></i></div>
+                            <div class="stat-info">
+                                <h3>Total Ganado</h3>
+                                <p id="total-animals" class="stat-value">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta de Peso Promedio -->
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-weight"></i></div>
+                            <div class="stat-info">
+                                <h3>Peso Promedio</h3>
+                                <p id="avg-weight" class="stat-value">N/A</p>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta de Vacunaciones -->
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-syringe"></i></div>
+                            <div class="stat-info">
+                                <h3>Vacunaciones</h3>
+                                <p id="total-vaccines" class="stat-value">0 pendientes</p>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta de Eventos -->
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                            <div class="stat-info">
+                                <h3>Próximos Eventos</h3>
+                                <div id="upcoming-events" class="stat-value">
+                                    <p id="Nuevo">Hay evento</p>
+                                </div>
+                                <button id="more-details-btn" class="btn-details add-btn-detel">Detalles</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de actividades recientes -->
+                    <div class="recent-activity">
+                        <h3>Actividad Reciente</h3>
+                        <ul id="activity-list" class="activity-list">
+                            <!-- Actividades se añadirán dinámicamente -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Sección Gestión de Ganado -->
+                <div id="ganado" class="section">
+                    <h2 class="section-title">Gestión de Ganado</h2>
+                    <button class="add-btn">+ Nuevo Animal</button>
+                    <div class="animal-list">
+                        <!-- Lista de animales se cargará dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Sección Sanidad -->
+                <div id="sanidad" class="section">
+                    <h2 class="section-title">Sanidad</h2>
+                    <button class="add-btn">+ Nueva Vacuna</button>
+                    <div class="vaccine-list">
+                        <!-- Lista de vacunas se cargará dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Sección Producción -->
+                <div id="produccion" class="section">
+                    <h2 class="section-title">Estadisticas</h2>
+                    <!-- cargará dinámicamente -->
+                </div>
+                
+
+                <!-- Sección Reportes -->
+                <div id="reportes" class="section">
+                    <h2 class="section-title">Reportes</h2>
+
+                </div>
+
+
+                <!-- Sección Configuración -->
+                <div id="configuracion" class="section">
+                    <h2 class="section-title">Configuración</h2>
+                    <div class="config-options">
+                        <div class="video-group-previews">
+                            <!-- Montana -->
+                            <div class="video-group" data-group="1">
+                                <div class="preview-frame">
+                                    <video class="group-preview-video" data-group="1" muted playsinline
+                                        autoplay></video>
+                                </div>
+                                <button class="background-btn" data-group="1">Montana</button>
+                            </div>
+                            <!-- Ganadería -->
+                            <div class="video-group" data-group="2">
+                                <div class="preview-frame">
+                                    <video class="group-preview-video" data-group="2" muted playsinline
+                                        autoplay></video>
+                                </div>
+                                <button class="background-btn" data-group="2">Ganadería</button>
+                            </div>
+                            <!-- Estándar -->
+                            <div class="video-group" data-group="3">
+                                <div class="preview-frame">
+                                    <video class="group-preview-video" data-group="3" muted playsinline
+                                        autoplay></video>
+                                </div>
+                                <button class="background-btn" data-group="3">Estándar</button>
+                            </div>
+                            <!-- Texas -->
+                            <div class="video-group" data-group="4">
+                                <div class="preview-frame">
+                                    <video class="group-preview-video" data-group="4" muted playsinline
+                                        autoplay></video>
+                                </div>
+                                <button class="background-btn" data-group="4">Texas</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="section-2-config">
+                        <h1>Configuración de Colores</h1>
+                        <!-- Theme selector with buttons and previews -->
+                        <div class="theme-selector">
+                            <h3>Seleccionar Tema de Colores</h3>
+                            <div class="theme-options">
+                                <div class="theme-option">
+                                    <button class="theme-btn" data-theme="default">Predeterminado</button>
+                                    <div class="theme-preview" data-theme="default">
+                                        <span class="preview-text">Vista previa</span>
+                                    </div>
+                                </div>
+                                <div class="theme-option">
+                                    <button class="theme-btn" data-theme="ocean">Océano</button>
+                                    <div class="theme-preview" data-theme="ocean">
+                                        <span class="preview-text">Vista previa</span>
+                                    </div>
+                                </div>
+                                <div class="theme-option">
+                                    <button class="theme-btn" data-theme="forest">Bosque</button>
+                                    <div class="theme-preview" data-theme="forest">
+                                        <span class="preview-text">Vista previa</span>
+                                    </div>
+                                </div>
+                                <div class="theme-option">
+                                    <button class="theme-btn" data-theme="desert">Desierto</button>
+                                    <div class="theme-preview" data-theme="desert">
+                                        <span class="preview-text">Vista previa</span>
+                                    </div>
+                                </div>
+                                <div class="theme-option">
+                                    <button class="theme-btn" data-theme="arctic">Ártico</button>
+                                    <div class="theme-preview" data-theme="arctic">
+                                        <span class="preview-text">Vista previa</span>
+                                    </div>
+                                </div>
+                                    <div class="theme-option">
+                                    <button class="theme-btn" data-theme="pink">Modo pink</button>
+                                    <div class="theme-preview" data-theme="pink">
+                                        <span class="preview-text">Vista previa</span>
+                                    </div>
+                                </div>
+                                <div class="theme-option">
+                                    <button class="theme-btn" data-theme="night">Modo Noche</button>
+                                    <div class="theme-preview" data-theme="night">
+                                        <span class="preview-text">Vista previa</span>
+                                    </div>
+                                </div>
+                            
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </aside>
+            <!-- Pie de página del sistema -->
+            <footer class="footer">
+                <p>© 2025 Hacienda Hansen | Versión 1.0.0</p>
+                <p>Desarrollado por Ing_ARV</p>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- Scripts del sistema -->
+    <script src="js/video-background.js"></script>
+    <script src="js/dataManager.js"></script>
+    <script src="js/navigationManager.js"></script>
+    <script src="js/dashboardManager.js"></script>
+    <script src="js/animalManager.js"></script>
+    <script src="js/vaccineManager.js"></script>
+    <script src="js/eventManager.js"></script>
+    <script src="js/keypad.js"></script>
+    <script src="js/reportManager.js"></script>
+    <script src="js/main-system.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/backgroundManager.js"></script>
+    <script src="js/configManger.js"></script>
+<script src="js/colorManager.js"></script>
+<script src="js/DomManager.js"></script>
+
+<script src="Subasta/graficManager.js"></script>
+<script src="Subasta/graficServer.js"></script>
+
+
+<script type="module" src="js/toastify.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- Librerías para generación de PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+    <script src="js/ToastUtils.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,44 @@
+
+/* Base button styles (shared properties) */
+.btn-delete,
+.btn-edit {
+    padding: 8px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-speed) ease;
+    color: var(--color-text-white);
+}
+
+/* Delete Button Styles */
+.btn-delete {
+    background-color: var(--color-error); /* #e11e1e in default theme */
+}
+
+.btn-delete:hover {
+    background-color: #c81b1b; /* Darken on hover (approx. 10% darker than --color-error) */
+    box-shadow: var(--shadow-soft);
+}
+
+.btn-delete i {
+    margin-right: 6px; /* Space between icon and text */
+}
+
+/* Edit Button Styles */
+.btn-edit {
+    background-color: var(--color-primary); /* #4a6fa5 in default theme */
+}
+
+.btn-edit:hover {
+    background-color: var(--color-primary-dark); /* #2c3e50 in default theme */
+    box-shadow: var(--shadow-soft);
+}
+
+.btn-edit i {
+    margin-right: 6px; /* Space between icon and text */
+}

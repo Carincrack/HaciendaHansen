@@ -1,0 +1,509 @@
+
+  :root {
+    --color-primary: #4a6fa5;
+    --color-primary-dark: #2f567d;
+    --color-primary-light: #5a82ba;
+    --color-success: #208624;
+    --color-error: #e11e1e;
+    --color-text: #333;
+    --color-text-light: #757575;
+    --transition-speed: 0.5s;
+    --border-radius: 12px;
+    --color-secondary: #f0c929;
+    --color-tertiary: #99582a;
+    --color-bg-light: #f9f9f9;
+    --color-bg-dark: #3b5d7f;
+    --color-text-white: #ffffff;
+    --color-border: #e0e0e0;
+    --shadow-soft: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-strong: 0 8px 30px rgba(0,0,0,0.2);
+  }
+
+
+  /* Configuration Section */
+
+
+.section.active {
+    display: block;
+}
+
+.section-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+
+
+/* Video Group Previews Layout */
+
+
+
+
+
+
+
+
+
+/* Sección principal de configuración */
+ 
+
+.section-title {
+    color: var(--border-radius);
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    
+    border-radius: 2px;
+}
+
+/* Contenedor de opciones de configuración */
+.config-options {
+    padding: 1.5rem;
+    backdrop-filter: blur(5px);
+    transition: all var(--transition-speed) ease;
+}
+
+/* Video Group Previews Layout mejorado */
+.video-group-previews {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.video-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform var(--transition-speed) ease;
+    position: relative;
+    padding: 1rem;
+
+    border-radius: var(--border-radius);
+
+    backdrop-filter: blur(5px);
+}
+
+
+.video-group::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    
+    opacity: 0;
+
+    transition: opacity var(--transition-speed) ease;
+    z-index: -1;
+}
+
+.video-group:hover::before {
+    opacity: 0.05;
+}
+
+/* Frame de preview mejorado */
+.preview-frame {
+    width: 100%;
+    max-width: 300px;
+    height: 170px;
+    border: 3px solid var(--color-border);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: #000;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all var(--transition-speed) ease;
+}
+
+.preview-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    opacity: 0;
+    transition: all 0.6s ease;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.video-group:hover .preview-frame {
+    border-color: var(--color-primary);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    transform: scale(1.02);
+}
+
+.video-group:hover .preview-frame::before {
+    opacity: 1;
+    animation: shimmer 1.5s ease-in-out;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.group-preview-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-speed) ease;
+}
+
+.video-group:hover .group-preview-video {
+    transform: scale(1.05);
+}
+
+/* Button Styling mejorado */
+.background-btn {
+    margin-top: 15px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-white);
+    background-color: var(--color-primary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 120px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.background-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.background-btn:hover {
+    background-color: var(--color-primary-light);
+   
+    transform: translateY(-1px);
+
+}
+
+
+
+
+
+
+
+/* Estado activo del grupo completo */
+.video-group.active {
+    position: relative;
+}
+
+
+
+@keyframes pulse-glow {
+    0% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb, 0, 100, 154), 0.3);
+    }
+    50% {
+        opacity: 0.8;
+        box-shadow: 0 0 0 10px rgba(var(--color-primary-rgb, 0, 100, 154), 0);
+    }
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb, 0, 100, 154), 0);
+    }
+}
+
+/* Efectos de carga para videos */
+.preview-frame.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 3;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Responsivo mejorado */
+@media (max-width: 768px) {
+    #configuracion {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .video-group-previews {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.2rem;
+    }
+    
+    .video-group {
+        padding: 0.8rem;
+    }
+    
+    .preview-frame {
+        height: 140px;
+    }
+    
+    .background-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .video-group-previews {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    #configuracion {
+        padding: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.6rem;
+    }
+    
+    .preview-frame {
+        height: 120px;
+    }
+    
+    .background-btn {
+        padding: 12px 16px;
+        font-size: 14px;
+        width: 100%;
+    }
+}
+
+/* Mejoras de accesibilidad */
+.background-btn:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.video-group:focus-within {
+    transform: translateY(-5px);
+ 
+}
+
+
+
+/*---------------*/
+/* Align with system's minimalist aesthetic */
+.section-2-config h1 {
+    font-size: 1.8rem; /* Slightly smaller to match system's scale */
+    font-weight: 600;
+    text-align: center; /* Fixed typo from 'star' to 'center' */
+    margin-bottom: 1.5rem;
+    color: var(--color-text);
+    position: relative;
+}
+
+.section-2-config h1::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px; /* Slightly smaller for subtlety */
+    height: 2px;
+    background: var(--color-primary); /* Use solid color instead of gradient */
+    border-radius: 2px;
+}
+
+/* Selector de temas */
+.theme-selector h3 {
+    color: var(--color-text);
+    font-size: 1.2rem; /* Smaller to match system's typography */
+    font-weight: 500;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* Contenedor de opciones de tema */
+.theme-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; /* Reduced gap for a tighter layout */
+    margin-top: 0.5rem;
+}
+
+/* Opción individual de tema */
+.theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform var(--transition-speed) ease;
+}
+
+.theme-option:hover {
+    transform: translateY(-3px); /* Reduced transform for subtlety */
+}
+
+/* Botones de tema simplificados */
+.theme-btn {
+    background-color: var(--color-primary);
+    color: var(--color-text-white);
+    border: 1px solid var(--color-border);
+    padding: 10px 18px; /* Slightly smaller padding */
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed) ease;
+    width: 100%;
+    font-size: 0.95rem; /* Smaller font size */
+    font-weight: 500;
+    box-shadow: var(--shadow-soft); /* Use system's shadow */
+    margin-bottom: 0.5rem;
+}
+
+.theme-btn:hover {
+    background-color: var(--color-primary-light);
+    box-shadow: var(--shadow-strong); /* Use system's stronger shadow */
+}
+
+.theme-btn:active {
+    transform: translateY(0); /* Subtle press effect */
+    transition: transform 0.1s ease;
+}
+
+.theme-btn.selected {
+    background-color: var(--color-primary-dark);
+    
+    font-weight: 600;
+    box-shadow: var(--shadow-strong);
+    border: 2px solid var(--color-primary);
+}
+
+/* Vista previa de temas simplificada */
+.theme-preview {
+    margin-top: 5px;
+    padding: 6px;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed) ease;
+    width: 100%;
+    height: 40px; /* Slightly smaller height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-light); /* Use system's background */
+}
+
+
+
+.preview-text {
+    font-size: 12px; /* Smaller font size */
+    color: var(--color-text);
+    font-weight: 500;
+    transition: color var(--transition-speed) ease;
+}
+
+.theme-preview:hover .preview-text {
+    color: var(--color-primary-dark);
+}
+
+/* Remove overly flashy active state */
+.theme-option.active .theme-preview {
+    border-color: var(--color-primary-dark);
+    box-shadow: var(--shadow-strong);
+}
+
+/* Ensure video-player is unaffected */
+#video-player, #keypad-background {
+    background-color: transparent !important;
+    opacity: 1 !important;
+    transition: none !important;
+}
+
+/* Responsivo ajustado */
+@media (max-width: 768px) {
+    .section-2-config {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+    
+    .section-2-config h1 {
+        font-size: 1.5rem;
+    }
+    
+    .theme-options {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.8rem;
+    }
+    
+    .theme-btn {
+        padding: 8px 14px;
+        font-size: 0.9rem;
+    }
+    
+    .theme-preview {
+        height: 35px;
+    }
+    
+    .preview-text {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .theme-options {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .section-2-config {
+        padding: 0.5rem;
+    }
+    
+    .section-2-config h1 {
+        font-size: 1.3rem;
+    }
+    
+    .theme-btn {
+        padding: 10px 14px;
+    }
+    
+    .theme-preview {
+        height: 30px;
+    }
+}
