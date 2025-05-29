@@ -4,18 +4,26 @@ class Keypad {
         this.validPins = Object.freeze({
             "NTgzNjA=": "Scott",
             "NTA0NjA=": "Kevin", 
-            "OTk5OTk=": "Kiana",
-
+            "OTk5OTk=": "Kiana"
         });
         
+        // Estado inicial
+        this.toastEnabled = true;
         this.currentPin = "";
         this.isProcessing = false;
+        
+        // Referencias DOM
         this.pinDots = document.querySelectorAll('.pin-dot');
         this.messageDisplay = document.getElementById('message-display');
         this.keypadOverlay = document.getElementById('keypad-overlay');
         this.keys = document.querySelectorAll('.key');
         this.logoContainer = document.querySelector('.logo-container');
         
+        // Bind de métodos para los listeners
+        this.handlePhysicalKeyPress = this.handlePhysicalKeyPress.bind(this);
+        this.handleKeyClick = this.handleKeyClick.bind(this);
+        
+        // Inicialización
         this.initKeypad();
         this.initLogout();
         this.createToastContainer();
@@ -23,7 +31,8 @@ class Keypad {
         window.keypad = this;
     }
 
-    // Crear contenedor para toasts
+    /* ========== MÉTODOS PRINCIPALES ========== */
+
     createToastContainer() {
         if (!document.getElementById('toast-container')) {
             const container = document.createElement('div');
@@ -39,88 +48,92 @@ class Keypad {
         }
     }
 
-    // Función toast integrada
-showToast(message, type = 'info', options = {}) {
-    const { duration = 3000, showIcon = true } = options;
-    
-    // Preparar el contenido
-    let content;
-    if (showIcon) {
-        content = `<div class="toast-content"><span class="toast-icon"></span>${message}</div>`;
-    } else {
-        content = `<div class="toast-content">${message}</div>`;
-        type = 'no-icon';
+    showToast(message, type = 'info', options = {}) {
+        if (!this.toastEnabled) return;
+        
+        const { duration = 3000, showIcon = true } = options;
+        
+        let content = showIcon 
+            ? `<div class="toast-content"><span class="toast-icon"></span>${message}</div>`
+            : `<div class="toast-content">${message}</div>`;
+        
+        Toastify({
+            text: content,
+            duration: duration,
+            close: true,
+            gravity: 'top',
+            position: 'right',
+            className: `toast-${showIcon ? type : 'no-icon'}`,
+            escapeMarkup: false,
+            stopOnFocus: true,
+            style: {
+                background: 'transparent',
+                boxShadow: 'none',
+                padding: '0'
+            }
+        }).showToast();
     }
-    
-    Toastify({
-        text: content,
-        duration: duration,
-        close: true,
-        gravity: 'top',
-        position: 'right',
-        className: `toast-${type}`,
-        escapeMarkup: false,
-        stopOnFocus: true,
-        style: {
-            background: 'transparent',
-            boxShadow: 'none',
-            padding: '0'
-        }
-    }).showToast();
-}
 
-initKeypad() {
-    console.log('initKeypad called'); // Verifica en la consola cuántas veces aparece esto
-    
-    // Configurar oyentes de teclas
-    this.keys.forEach(key => {
-        // Verifica si ya hay un listener
-        if (!key._hasKeypadListener) {
-            key.addEventListener('click', () => {
-                const keyValue = key.getAttribute('data-key');
-                this.handleKeyPress(keyValue);
-                this.highlightKey(key);
-            });
-            key._hasKeypadListener = true; // Marcar que ya tiene un listener
-        }
-    });
+    /* ========== CONTROL DEL KEYPAD ========== */
 
-    // Soporte para teclado físico
-    if (!document._hasKeypadKeydownListener) {
-        document.addEventListener('keydown', (event) => {
-            if (event.repeat) return;
-            
-            const key = event.key;
-            if (/^[0-9]$/.test(key)) {
-                this.handleKeyPress(key);
-                this.highlightKey(document.querySelector(`[data-key="${key}"]`));
-            } else if (key === 'Enter') {
-                this.handleKeyPress('enter');
-                this.highlightKey(document.querySelector('[data-key="enter"]'));
-            } else if (key === 'Backspace' || key === 'Delete') {
-                this.handleKeyPress('clear');
-                this.highlightKey(document.querySelector('[data-key="clear"]'));
+    initKeypad() {
+        // Listeners para botones táctiles
+        this.keys.forEach(key => {
+            if (!key._hasKeypadListener) {
+                key.addEventListener('click', this.handleKeyClick);
+                key._hasKeypadListener = true;
             }
         });
-        document._hasKeypadKeydownListener = true; // Marcar que ya tiene un listener
-    }
-}
-    initLogout() {
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                this.showKeypad();
-                this.showToast('Sesión cerrada', 'info');
-            });
+
+        // Listener para teclado físico
+        if (!document._hasKeypadKeydownListener) {
+            document.addEventListener('keydown', this.handlePhysicalKeyPress);
+            document._hasKeypadKeydownListener = true;
         }
     }
 
-    highlightKey(key) {
-        if (!key) return;
-        key.classList.add('key-pressed');
-        setTimeout(() => {
-            key.classList.remove('key-pressed');
-        }, 200);
+    disableKeypad() {
+        // Eliminar listener de teclado físico
+        if (document._hasKeypadKeydownListener) {
+            document.removeEventListener('keydown', this.handlePhysicalKeyPress);
+            document._hasKeypadKeydownListener = false;
+        }
+
+        // Eliminar listeners de botones
+        this.keys.forEach(key => {
+            if (key._hasKeypadListener) {
+                key.removeEventListener('click', this.handleKeyClick);
+                key._hasKeypadListener = false;
+            }
+        });
+    }
+
+    enableKeypad() {
+        this.initKeypad(); // Reestablece todos los listeners
+    }
+
+    /* ========== MANEJO DE EVENTOS ========== */
+
+    handlePhysicalKeyPress(event) {
+        if (event.repeat) return;
+        
+        const key = event.key;
+        if (/^[0-9]$/.test(key)) {
+            this.handleKeyPress(key);
+            this.highlightKey(document.querySelector(`[data-key="${key}"]`));
+        } else if (key === 'Enter') {
+            this.handleKeyPress('enter');
+            this.highlightKey(document.querySelector('[data-key="enter"]'));
+        } else if (key === 'Backspace' || key === 'Delete') {
+            this.handleKeyPress('clear');
+            this.highlightKey(document.querySelector('[data-key="clear"]'));
+        }
+    }
+
+    handleKeyClick(event) {
+        const keyValue = event.currentTarget.getAttribute('data-key');
+        this.handleKeyPress(keyValue);
+        this.highlightKey(event.currentTarget);
     }
 
     handleKeyPress(keyValue) {
@@ -131,23 +144,126 @@ initKeypad() {
                 this.clearPin();
                 break;
             case 'enter':
-                if (this.currentPin.length === 5) {
-                    this.isProcessing = true;
-                    this.verifyPin();
-                } else {
-                    this.isProcessing = true;
-                    this.messageDisplay.textContent = "Ingrese 5 dígitos";
-                    this.messageDisplay.className = "error-message";
-                    setTimeout(() => {
-                        this.messageDisplay.textContent = "Ingrese PIN";
-                        this.messageDisplay.className = "";
-                        this.isProcessing = false;
-                    }, 1500);
-                }
+                this.handleEnter();
                 break;
             default:
                 this.addDigit(keyValue);
                 break;
+        }
+    }
+
+    /* ========== LÓGICA DEL PIN ========== */
+
+    handleEnter() {
+        if (this.currentPin.length === 5) {
+            this.isProcessing = true;
+            this.verifyPin();
+        } else {
+            this.showTempMessage("Ingrese 5 dígitos", "error-message");
+        }
+    }
+
+    verifyPin() {
+        const decodedPins = Object.fromEntries(
+            Object.entries(this.validPins).map(([encodedPin, userName]) => [
+                atob(encodedPin), userName
+            ])
+        );
+        
+        const currentPinStr = String(this.currentPin);
+        
+        if (decodedPins[currentPinStr]) {
+            this.successAccess(decodedPins[currentPinStr]);
+        } else {
+            this.failedAccess();
+        }
+    }
+
+    /* ========== FLUJOS DE ACCESO ========== */
+
+    successAccess(userName = '') {
+        // Feedback visual
+        this.pinDots.forEach(dot => dot.classList.add('valid'));
+        this.showTempMessage(`ACCESO CONCEDIDO - ${userName}`, "success-message");
+        
+        // Actualizar UI
+        this.updateUserElements(userName);
+        
+        // Toast de bienvenida (controlado)
+        this.toastEnabled = true;
+        this.showToast(
+            `${["Kiana"].includes(userName) ? "¡Bienvenida" : "¡Bienvenido"} ${userName}!`, 
+            'success', 
+            { duration: 3000 }
+        );
+        this.toastEnabled = false;
+        
+        // Ocultar keypad
+        this.hideKeypad(() => {
+            document.dispatchEvent(new CustomEvent('accessGranted', {
+                detail: { userName: userName }
+            }));
+        });
+        
+        // Desactivar keypad
+        this.disableKeypad();
+    }
+
+    failedAccess() {
+        this.pinDots.forEach(dot => dot.classList.add('invalid'));
+        this.showTempMessage("PIN INCORRECTO", "error-message");
+        this.showToast('PIN incorrecto. Intente nuevamente.', 'error');
+        
+        setTimeout(() => this.clearPin(), 1500);
+    }
+
+    /* ========== HELPERS ========== */
+
+    showTempMessage(message, className) {
+        this.messageDisplay.textContent = message;
+        this.messageDisplay.className = className;
+        
+        if (className.includes('error')) {
+            this.isProcessing = true;
+            setTimeout(() => {
+                this.messageDisplay.textContent = "Ingrese PIN";
+                this.messageDisplay.className = "";
+                this.isProcessing = false;
+            }, 1500);
+        }
+    }
+
+    updateUserElements(userName) {
+        const userNameDiv = document.getElementById('user-name');
+        if (userNameDiv) userNameDiv.textContent = `Usuario: ${userName}`;
+
+        const span123 = document.getElementById('123');
+        if (span123) span123.textContent = userName;
+    }
+
+    hideKeypad(callback) {
+        this.keypadOverlay.classList.add('hide');
+        if (this.logoContainer) this.logoContainer.classList.add('hide');
+        
+        setTimeout(() => {
+            this.keypadOverlay.style.display = 'none';
+            if (this.logoContainer) this.logoContainer.style.display = 'none';
+            this.isProcessing = false;
+            if (callback) callback();
+        }, 1000);
+    }
+
+    /* ========== MÉTODOS BÁSICOS ========== */
+
+    addDigit(digit) {
+        if (this.currentPin.length < 5) {
+            this.currentPin += digit;
+            this.updatePinDisplay();
+            
+            if (this.currentPin.length === 5) {
+                this.isProcessing = true;
+                setTimeout(() => this.verifyPin(), 300);
+            }
         }
     }
 
@@ -159,20 +275,6 @@ initKeypad() {
         this.isProcessing = false;
     }
 
-    addDigit(digit) {
-        if (this.currentPin.length < 5) {
-            this.currentPin += digit;
-            this.updatePinDisplay();
-            
-            if (this.currentPin.length === 5) {
-                this.isProcessing = true;
-                setTimeout(() => {
-                    this.verifyPin();
-                }, 300);
-            }
-        }
-    }
-
     updatePinDisplay() {
         this.pinDots.forEach((dot, index) => {
             dot.classList.remove('active', 'valid', 'invalid');
@@ -182,80 +284,29 @@ initKeypad() {
         });
     }
 
-    verifyPin() {
-        const currentPinStr = String(this.currentPin);
-        const decodedPins = Object.fromEntries(
-            Object.entries(this.validPins).map(([encodedPin, userName]) => [
-                atob(encodedPin), userName
-            ])
-        );
-        
-        const pinExists = Object.keys(decodedPins).includes(currentPinStr);
-        
-        if (pinExists) {
-            const userName = decodedPins[currentPinStr];
-            this.successAccess(userName);
-        } else {
-            this.failedAccess();
-        }
+    highlightKey(key) {
+        if (!key) return;
+        key.classList.add('key-pressed');
+        setTimeout(() => key.classList.remove('key-pressed'), 200);
     }
 
-    successAccess(userName = '') {
-        this.pinDots.forEach(dot => dot.classList.add('valid'));
-        this.messageDisplay.textContent = "ACCESO CONCEDIDO" + (userName ? ` - ${userName}` : '');
-        this.messageDisplay.className = "success-message";
-        
-        // Actualizar elementos del DOM con el usuario
-        const userNameDiv = document.getElementById('user-name');
-        if (userNameDiv) {
-            userNameDiv.textContent = `Usuario: ${userName}`;
-        }
-        
-        const span123 = document.getElementById('123');
-        if (span123) {
-            span123.textContent = userName;
-        }
-        
-        // Mostrar toast de bienvenida
-        this.showToast(`¡Bienvenido ${userName}!`, 'success', 4000);
-        
-        const accessEvent = new CustomEvent('accessGranted', {
-            detail: { userName: userName }
-        });
-        
-        setTimeout(() => {
-            this.keypadOverlay.classList.add('hide');
-            if (this.logoContainer) {
-                this.logoContainer.classList.add('hide');
-            }
-            
-            setTimeout(() => {
-                this.keypadOverlay.style.display = 'none';
-                if (this.logoContainer) {
-                    this.logoContainer.style.display = 'none';
-                }
-                document.dispatchEvent(accessEvent);
-                this.isProcessing = false;
-            }, 100);
-        }, 1000);
-    }
+    /* ========== LOGOUT ========== */
 
-    failedAccess() {
-        this.pinDots.forEach(dot => dot.classList.add('invalid'));
-        this.messageDisplay.textContent = "PIN INCORRECTO";
-        this.messageDisplay.className = "error-message";
-        
-        // Mostrar toast de error
-        this.showToast('PIN incorrecto. Intente nuevamente.', 'error');
-        
-        setTimeout(() => {
-            this.clearPin();
-        }, 1500);
+    initLogout() {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn && !logoutBtn._hasLogoutListener) {
+            logoutBtn.addEventListener('click', () => {
+                this.toastEnabled = true; // Reactivar Toastify
+                this.enableKeypad(); // Reactivar keypad
+                this.showKeypad();
+                this.showToast('Sesión cerrada', 'info');
+            });
+            logoutBtn._hasLogoutListener = true;
+        }
     }
 
     showKeypad() {
         this.clearPin();
-        this.isProcessing = false;
         this.keypadOverlay.style.display = 'block';
         this.keypadOverlay.classList.remove('hide');
         
@@ -263,13 +314,8 @@ initKeypad() {
             this.logoContainer.style.display = 'block';
             this.logoContainer.classList.remove('hide');
         }
-        
-        this.messageDisplay.textContent = "Ingrese PIN";
-        this.messageDisplay.className = "";
     }
 }
 
-// Inicializar Keypad cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-    new Keypad();
-});
+// Inicialización
+document.addEventListener('DOMContentLoaded', () => new Keypad());
