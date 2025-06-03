@@ -4,7 +4,8 @@ class Keypad {
         this.validPins = Object.freeze({
             "NTgzNjA=": "Scott",
             "NTA0NjA=": "Kevin", 
-            "OTk5OTk=": "Kiana"
+            "OTk5OTk=": "Kiana",
+            "ODg3MDE=": "Admin",
         });
         
         // Estado inicial
@@ -182,6 +183,9 @@ class Keypad {
     /* ========== FLUJOS DE ACCESO ========== */
 
     successAccess(userName = '') {
+        // Guardar el PIN como userId en localStorage
+        localStorage.setItem('userId', this.currentPin);
+
         // Feedback visual
         this.pinDots.forEach(dot => dot.classList.add('valid'));
         this.showTempMessage(`ACCESO CONCEDIDO - ${userName}`, "success-message");
@@ -296,6 +300,9 @@ class Keypad {
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn && !logoutBtn._hasLogoutListener) {
             logoutBtn.addEventListener('click', () => {
+                // Limpiar el userId al cerrar sesión
+                localStorage.removeItem('userId');
+                
                 this.toastEnabled = true; // Reactivar Toastify
                 this.enableKeypad(); // Reactivar keypad
                 this.showKeypad();

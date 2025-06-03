@@ -8,7 +8,7 @@
     <title>Sistema de Gestión Ganadera - Hacienda Hansen</title>
 
     <!-- Hojas de estilo locales -->
-     <link rel="stylesheet" href="css/VaccineForm.css">
+    <link rel="stylesheet" href="css/VaccineForm.css">
     <link rel="stylesheet" href="css/StyleTosty.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="css/keypad.css">
@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/buttom.css">
     <link rel="stylesheet" href="css/table.css">
+    <link rel="stylesheet" href="css/styleEmbryo.css">
 
     <link rel="stylesheet" href="Subasta/graficStyle.css">
     <!-- Iconos de Font Awesome -->
@@ -103,7 +104,7 @@
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                     <samp>Cerrar Seccion</samp>
-               
+
 
 
                 </div>
@@ -116,18 +117,28 @@
             <nav class="nav">
                 <div class="menu-title">Menú Principal</div>
                 <ul class="menu-list">
+
                     <li class="menu-item active" data-section="dashboard">
                         <a href="#dashboard">
                             <i class="fas fa-tachometer-alt"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
+
                     <li class="menu-item" data-section="ganado">
                         <a href="#ganado">
                             <i class="fas fa-cow"></i>
                             <span>Ganado</span>
                         </a>
                     </li>
+
+                    <li class="menu-item" data-section="embriones">
+                        <a href="#embriones">
+                            <i class="fa-solid fa-dna"></i>
+                            <span>Embriones</span>
+                        </a>
+                    </li>
+
                     <li class="menu-item" data-section="sanidad">
                         <a href="#sanidad">
                             <i class="fas fa-heartbeat"></i>
@@ -146,20 +157,28 @@
                             <span>Reportes</span>
                         </a>
                     </li>
+                    <li class="menu-item" data-section="finanzas">
+                        <a href="#finanzas">
+                            <i class="fa-solid fa-dollar-sign"></i>
+                            <span>Finanzas</span>
+                        </a>
+                    </li>
+
                     <li class="menu-item" data-section="configuracion">
                         <a href="#configuracion">
                             <i class="fas fa-cog"></i>
                             <span>Configuración</span>
                         </a>
                     </li>
-                    <!--
-                     <li class="menu-item" data-section="admin">
-                        <a href="#admin">
-                            <i class="fa-solid fa-fingerprint"></i></i>
-                            <span>Admin</span>
-                        </a>
-                    </li>-->
+
                 </ul>
+                
+                   <li class="menu-item admin-conteiner" data-section="admin" style="display: none;">
+    <a href="#admin">
+        <i class="fa-solid fa-fingerprint"></i>
+        <span>Admin</span>
+    </a>
+</li>
             </nav>
 
             <!-- Contenido de las secciones -->
@@ -167,6 +186,7 @@
 
                 <!-- Sección Dashboard -->
                 <div id="dashboard" class="section active">
+
                     <h2 class="section-title">Dashboard</h2>
                     <div class="stats-container">
                         <!-- Tarjeta de Total de Ganado -->
@@ -178,12 +198,36 @@
                             </div>
                         </div>
 
+           
+                   <!-- Targeta el Capital -->
+<!-- Targeta el Capital -->
+<div class="stat-card">
+    <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+    <div class="stat-info">
+        <h3>Capital</h3>
+        <p id="peso-capetal" class="stat-value">N/A
+            <!-- Carga el peso total multiplicado por 1200 -->
+        </p>
+        <div class="btn-captal-container">
+            <button class="btn-details add-btn-detel btn-cambio">Colones
+                <!-- Botón para cambiar a colones que está a 500 -->
+            </button>
+            <button class="btn-details add-btn-detel btn-cambio">Dolar
+                <!-- Botón para cambiar a dólares -->
+            </button>
+        </div>
+    </div>
+</div>
+
+
                         <!-- Tarjeta de Peso Promedio -->
                         <div class="stat-card">
                             <div class="stat-icon"><i class="fas fa-weight"></i></div>
                             <div class="stat-info">
                                 <h3>Peso Promedio</h3>
                                 <p id="avg-weight" class="stat-value">N/A</p>
+                                       <h3>Peso total</h3>
+                                   <p id="total-weight" class="stat-value">N/A</p>
                             </div>
                         </div>
 
@@ -241,13 +285,27 @@
                     <h2 class="section-title">Estadisticas</h2>
                     <!-- cargará dinámicamente -->
                 </div>
-                
+
 
                 <!-- Sección Reportes -->
                 <div id="reportes" class="section">
                     <h2 class="section-title">Reportes</h2>
+                    <!-- cargará dinámicamente -->
+                </div>
+
+
+                <div id="finanzas" class="section">
+                    <h2 class="section-title">Finanzas</h2>
+                    <!-- cargará dinámicamente -->
 
                 </div>
+
+              <div id="embriones" class="section">
+    <h2 class="section-title">Embriones</h2>
+    <button class="add-btn-embrion add-btn">+ Nuevo Embrion</button>
+    <!-- aquí dinámicamente cards -->
+</div>
+
 
 
                 <!-- Sección Configuración -->
@@ -327,7 +385,7 @@
                                         <span class="preview-text">Vista previa</span>
                                     </div>
                                 </div>
-                                    <div class="theme-option">
+                                <div class="theme-option">
                                     <button class="theme-btn" data-theme="pink">Modo pink</button>
                                     <div class="theme-preview" data-theme="pink">
                                         <span class="preview-text">Vista previa</span>
@@ -339,11 +397,11 @@
                                         <span class="preview-text">Vista previa</span>
                                     </div>
                                 </div>
-                            
+
                             </div>
                         </div>
                     </div>
-                </div> 
+                </div>
             </aside>
             <!-- Pie de página del sistema -->
             <footer class="footer">
@@ -354,7 +412,7 @@
         </main>
     </div>
 
-    <!-- Scripts del sistema -->
+    <!-- Scripts del sistema (moved to end of body) -->
     <script src="js/video-background.js"></script>
     <script src="js/dataManager.js"></script>
     <script src="js/navigationManager.js"></script>
@@ -368,21 +426,23 @@
     <script src="js/main.js"></script>
     <script src="js/backgroundManager.js"></script>
     <script src="js/configManger.js"></script>
-<script src="js/colorManager.js"></script>
-<script src="js/DomManager.js"></script>
-
-<script src="Subasta/graficManager.js"></script>
-<script src="Subasta/graficServer.js"></script>
-
-
-<script type="module" src="js/toastify.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <!-- Librerías para generación de PDFs -->
+    <script src="js/colorManager.js"></script>
+    <script src="js/DomManager.js"></script>
+    <script src="Subasta/graficManager.js"></script>
+    <script src="Subasta/graficServer.js"></script>
+   <script src="js/capitalManager.js" defer></script>
+   <script src="js/totalWeightManager.js" defer></script>
+   <script src="js/adminMenuVisibility.js" defer></script>
+   <script src="js/EmbrioManager.js"></script>
+  
+    <!-- Consolidate Toastify CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- Module for ToastUtils -->
+    <script type="module" src="js/ToastUtils.js"></script>
+    <!-- PDF libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-
-    <script src="js/ToastUtils.js"></script>
+    
 </body>
 
 </html>

@@ -71,15 +71,13 @@ class DashboardManager {
           return false;
         }
         const dateObj = new Date(v.nextDoseDate);
-        console.log(
-          `Validando vacuna: ${v.name}, nextDoseDate: ${v.nextDoseDate}, parsed: ${dateObj}, completed: ${v.completed}`
-        );
+    
         return !v.completed && !isNaN(dateObj.getTime());
       })
       .map((v) => ({ ...v, dateObj: new Date(v.nextDoseDate) }))
       .sort((a, b) => a.dateObj - b.dateObj);
 
-    console.log("Todas las vacunas no completadas encontradas:", upcoming);
+ 
 
     if (upcoming.length > 0) {
       const closestEvent = upcoming[0];
@@ -270,7 +268,7 @@ class DashboardManager {
 
   updateRecentActivity() {
     if (!this.activityListElement) {
-      console.error("Elemento activity-list no encontrado");
+      
       return;
     }
 

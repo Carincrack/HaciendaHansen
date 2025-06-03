@@ -7,6 +7,7 @@ class ReportManager {
         this.debounceTimeout = null;
         this.toastShown = false; // Initialize toast flag
         this.initialize();
+        this.lastToast = null;
     }
 
     debounce(func, wait) {
