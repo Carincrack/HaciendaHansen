@@ -13,6 +13,8 @@ const PROJECT_DIR = path.join(__dirname, 'base_data');
 const BASE_DIR = path.join(PROJECT_DIR, 'animal-data');
 const VACCINE_DIR = path.join(__dirname, 'data_vacunas');
 const ARCHIVOS_DIR = path.join(VACCINE_DIR, 'archivos');
+const EMBRYO_DIR = path.join(PROJECT_DIR, 'embriones_data');
+console.log('Ruta de EMBRYO_DIR:', EMBRYO_DIR);
 
 // Verificar y mostrar la ruta absoluta para depuración
 console.log('Ruta de PROJECT_DIR:', PROJECT_DIR);
@@ -24,6 +26,7 @@ const getAnimalDir = (animalName) => path.join(BASE_DIR, animalName);
 const getDataDir = (animalName) => path.join(getAnimalDir(animalName), 'datos');
 const getProfileDir = (animalName) => path.join(getAnimalDir(animalName), 'perfil');
 const getTitleDir = (animalName) => path.join(getAnimalDir(animalName), 'titulo');
+const getEmbryoDir = (embryoId) => path.join(EMBRYO_DIR, embryoId);
 
 // Configuración de multer para manejar la subida de imágenes (para animales)
 const storage = multer.diskStorage({
@@ -130,6 +133,8 @@ async function ensureBaseDirs() {
         console.log('Directorio creado:', VACCINE_DIR);
         await fs.mkdir(ARCHIVOS_DIR, { recursive: true });
         console.log('Directorio creado:', ARCHIVOS_DIR);
+        await fs.mkdir(EMBRYO_DIR, { recursive: true });
+        console.log('Directorio creado:', EMBRYO_DIR);
         console.log('Estructura de directorios base creada');
     } catch (error) {
         console.error('Error al crear estructura de directorios base:', error);
@@ -138,6 +143,16 @@ async function ensureBaseDirs() {
 
 // Ejecutar ensureBaseDirs al iniciar el servidor
 ensureBaseDirs();
+
+// Importar las rutas de embriones y pasar las dependencias necesarias
+const embryoRoutes = require('./embryoRoutes')({
+    fs,
+    path,
+    ensureBaseDirs,
+    getEmbryoDir,
+    EMBRYO_DIR
+});
+app.use('/embryo', embryoRoutes);
 
 // Endpoint para cargar todos los animales
 app.get('/animals', async (req, res) => {
@@ -385,7 +400,6 @@ app.post('/api/vaccines/save-per-animal', async (req, res) => {
 });
 
 // Endpoint para actualizar una vacuna por ID
-// Endpoint para actualizar una vacuna por ID
 app.patch('/api/vaccines/:id', async (req, res) => {
     try {
         const vaccineId = req.params.id;
@@ -401,7 +415,6 @@ app.patch('/api/vaccines/:id', async (req, res) => {
             return res.status(400).json({ error: 'Falta el nombre del archivo (fileName o originalFileName)' });
         }
 
-        // Buscar el archivo en VACCINE_DIR (data_vacunas), no en ARCHIVOS_DIR
         const originalFilePath = path.join(VACCINE_DIR, originalFileName);
         const newFilePath = path.join(VACCINE_DIR, fileName);
         let found = false;
@@ -411,13 +424,11 @@ app.patch('/api/vaccines/:id', async (req, res) => {
             found = true;
             console.log('Archivo encontrado:', originalFilePath);
 
-            // Si el nombre del archivo ha cambiado, renombrar el archivo en VACCINE_DIR
             if (originalFileName !== fileName) {
                 await fs.rename(originalFilePath, newFilePath);
                 console.log(`Archivo renombrado de ${originalFilePath} a ${newFilePath}`);
             }
 
-            // Actualizar el contenido del archivo
             await fs.writeFile(newFilePath, JSON.stringify(vaccineData, null, 2));
             console.log('Vacuna actualizada en:', newFilePath);
         } catch (error) {
@@ -538,7 +549,6 @@ app.get('/dashboard-stats', async (req, res) => {
             }
         }
 
-        // Estadísticas de vacunas
         try {
             await fs.access(VACCINE_DIR);
             const vaccineFiles = await fs.readdir(VACCINE_DIR);

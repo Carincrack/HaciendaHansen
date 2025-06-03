@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const dashboardManager = new DashboardManager(dataManager, configManager);
     const reportManager = new ReportManager(dataManager);
     const animalManager = new AnimalManager(dataManager, dashboardManager);
-    const vaccineManager = new VaccineManager(dataManager, dashboardManager, null);
+    const vaccineManager = new VaccineManager(dataManager, dashboardManager);
    
 
     // Instanciar VideoBackground

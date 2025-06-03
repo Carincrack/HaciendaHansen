@@ -1,0 +1,17 @@
+.embryo-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    padding: 20px;
+}
+
+.btn-edit-embryo, .btn-delete-embryo, .btn-info-embryo {
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-border);
+ 
+}
+
+.btn-edit-embryo { background-color: var(--color-primary); color: var(--color-text-white); }
+.btn-delete-embryo { background-color: var(--color-error); color: var(--color-text-white); }
+.btn-info-embryo { background-color: var(--color-success); color: var(--color-text-white); }

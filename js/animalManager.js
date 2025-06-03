@@ -389,6 +389,7 @@ class AnimalManager {
             this.dataManager.saveDataToLocalStorage();
             
             this.dashboardManager.updateDashboard();
+            document.dispatchEvent(new CustomEvent('animalAdded'));
             return true;
         } catch (error) {
             throw error;
@@ -447,6 +448,7 @@ class AnimalManager {
                 
                 this.renderAnimals();
                 this.dashboardManager.updateDashboard();
+                document.dispatchEvent(new CustomEvent('animalDeleted'));
                 
                 this.showToast('Animal eliminado correctamente', 'success');
             } catch (error) {
@@ -455,36 +457,24 @@ class AnimalManager {
         }
     }
 
-    // Método para mostrar notificaciones con Toastify
-showToast(message, type = 'info', options = {}) {
-    const { duration = 3000, showIcon = true } = options;
-    
-    // Preparar el contenido
-    let content;
-    if (showIcon) {
-        content = `<div class="toast-content"><span class="toast-icon"></span>${message}</div>`;
-    } else {
-        content = `<div class="toast-content">${message}</div>`;
-        type = 'no-icon';
+    showToast(message, type = 'info', options = {}) {
+        const { duration = 3000, showIcon = true } = options;
+        let content = showIcon ? `<div class="toast-content"><span class="toast-icon"></span>${message}</div>` : `<div class="toast-content">${message}</div>`;
+        if (!showIcon) type = 'no-icon';
+        
+        Toastify({
+            text: content,
+            duration: duration,
+            close: true,
+            gravity: 'top',
+            position: 'right',
+            className: `toast-${type}`,
+            escapeMarkup: false,
+            stopOnFocus: true,
+            style: { background: 'transparent', boxShadow: 'none', padding: '0' }
+        }).showToast();
     }
-    
-    Toastify({
-        text: content,
-        duration: duration,
-        close: true,
-        gravity: 'top',
-        position: 'right',
-        className: `toast-${type}`,
-        escapeMarkup: false,
-        stopOnFocus: true,
-        style: {
-            background: 'transparent',
-            boxShadow: 'none',
-            padding: '0'
-        }
-    }).showToast();
-}
-    // Método para mostrar un modal de confirmación
+
     async showConfirmation(message) {
         return new Promise(resolve => {
             const overlay = document.createElement('div');
@@ -534,5 +524,4 @@ showToast(message, type = 'info', options = {}) {
     }
 }
 
-// Hacer AnimalManager global para el navegador
 window.AnimalManager = AnimalManager;
