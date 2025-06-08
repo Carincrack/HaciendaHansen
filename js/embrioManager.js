@@ -5,7 +5,7 @@ class EmbrioManager {
         this.formOpen = false;
         this.cows = [];
         this.embryos = [];
-        this.photoPrefix = 'animalPhoto_'; // Igual que en AnimalManager
+        this.photoPrefix = 'animalPhoto_';
 
         this.init();
     }
@@ -27,12 +27,6 @@ class EmbrioManager {
             if (!response.ok) throw new Error('Error al cargar las vacas');
             this.cows = await response.json();
             console.log('Vacas cargadas:', this.cows);
-            if (!this.cows.some(cow => cow.name === 'ppp')) {
-                this.cows.push({ id: 'ppp1', name: 'ppp', registryId: 'ppp1' });
-            }
-            if (!this.cows.some(cow => cow.name === 'Farid')) {
-                this.cows.push({ id: 'farid1', name: 'Farid', registryId: 'farid1' });
-            }
         } catch (error) {
             console.error('Error al cargar las vacas:', error);
             this.showToast(`Error al cargar las vacas: ${error.message}`, 'error');
@@ -142,8 +136,8 @@ class EmbrioManager {
 
             const countdownDays = pregnancyConfirmation === 'custom' ? customCountdown : pregnancyConfirmation;
 
-            if (!receptorId || !donorMotherId || !donorFatherId || !countdownDays) {
-                this.showToast('Por favor, complete todos los campos obligatorios.', 'error');
+            if (receptorId === "" || donorMotherId === "" || donorFatherId === "" || !countdownDays) {
+                this.showToast('Debe seleccionar una vaca para Receptor, Donadora/Madre y Donadora/Padre, y especificar los días de preñez.', 'error');
                 return;
             }
 
@@ -258,11 +252,20 @@ class EmbrioManager {
         }
         embryoList.innerHTML = '';
 
+        if (this.embryos.length === 0) {
+            embryoList.innerHTML = '<p>No hay embriones registrados.</p>';
+            return;
+        }
+
         this.embryos.forEach(embryo => {
+            const receptorCow = this.cows.find(c => c.id === embryo.receptorId);
+            const donorMotherCow = this.cows.find(c => c.id === embryo.donorMotherId);
+            const donorFatherCow = this.cows.find(c => c.id === embryo.donorFatherId);
+
             const cowNames = {
-                receptor: 'ppp',
-                donorMother: 'Farid',
-                donorFather: 'ppp'
+                receptor: receptorCow ? receptorCow.name : 'Desconocido',
+                donorMother: donorMotherCow ? donorMotherCow.name : 'Desconocido',
+                donorFather: donorFatherCow ? donorFatherCow.name : 'Desconocido'
             };
 
             const embryoCard = document.createElement('div');
@@ -339,15 +342,15 @@ class EmbrioManager {
     showInfo(embryoId) {
         const embryo = this.embryos.find(e => e.embryoId === embryoId);
         if (embryo) {
-            // Obtener las vacas con sus registryId
-            const receptorCow = this.cows.find(c => c.id === embryo.receptorId) || { name: 'ppp', registryId: 'ppp1' };
-            const donorMotherCow = this.cows.find(c => c.id === embryo.donorMotherId) || { name: 'Farid', registryId: 'farid1' };
-            const donorFatherCow = this.cows.find(c => c.id === embryo.donorFatherId) || { name: 'ppp', registryId: 'ppp1' };
+            const receptorCow = this.cows.find(c => c.id === embryo.receptorId) || { name: 'Desconocido', registryId: '' };
+            const donorMotherCow = this.cows.find(c => c.id === embryo.donorMotherId) || { name: 'Desconocido', registryId: '' };
+            const donorFatherCow = this.cows.find(c => c.id === embryo.donorFatherId) || { name: 'Desconocido', registryId: '' };
 
             const extensionsToTry = ['jpeg', 'jpg', 'png', 'webp', 'gif'];
             const basePhotoPath = 'http://localhost:3000/Proyecto_Hacienda_HXX/animal-data';
             const getPhotoUrl = async (cow) => {
-                // Primero intentar obtener la foto desde localStorage como en AnimalManager
+                if (!cow.registryId) return '/images/placeholder.jpg';
+
                 const storedPhoto = localStorage.getItem(`${this.photoPrefix}${cow.registryId}`);
                 if (storedPhoto) {
                     const testImage = new Image();
@@ -358,8 +361,7 @@ class EmbrioManager {
                     });
                     if (loaded) return storedPhoto;
                 }
-                // Si no hay foto en localStorage, construir la URL manualmente
-                if (!cow.registryId) return '/images/placeholder.jpg';
+
                 const nameEncoded = encodeURIComponent(cow.name);
                 const cleanRegistryId = encodeURIComponent(cow.registryId.replace('/', '_'));
                 for (const ext of extensionsToTry) {
@@ -371,7 +373,6 @@ class EmbrioManager {
                         testImage.onerror = () => resolve(false);
                     });
                     if (loaded) {
-                        // Guardar en localStorage para futuras referencias
                         localStorage.setItem(`${this.photoPrefix}${cow.registryId}`, url);
                         return url;
                     }
@@ -410,15 +411,15 @@ class EmbrioManager {
                         </tr>
                         <tr>
                             <td style="padding: 8px; border: 1px solid var(--color-border);">Receptor:</td>
-                            <td style="padding: 8px; border: 1px solid var(--color-border);"><img src="${receptorPhoto}" alt="${receptorCow.name}" class="animal-photo" style="max-width: 100px; max-height: 100px; border-radius: 4px;"> ${receptorCow.name}</td>
+                            <td style="padding: 8px; border: 1px solid var(--color-border);">${receptorCow.registryId ? `<img src="${receptorPhoto}" alt="${receptorCow.name}" class="animal-photo" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : ''} ${receptorCow.name}</td>
                         </tr>
                         <tr>
                             <td style="padding: 8px; border: 1px solid var(--color-border);">Donadora/Madre:</td>
-                            <td style="padding: 8px; border: 1px solid var(--color-border);"><img src="${donorMotherPhoto}" alt="${donorMotherCow.name}" class="animal-photo" style="max-width: 100px; max-height: 100px; border-radius: 4px;"> ${donorMotherCow.name}</td>
+                            <td style="padding: 8px; border: 1px solid var(--color-border);">${donorMotherCow.registryId ? `<img src="${donorMotherPhoto}" alt="${donorMotherCow.name}" class="animal-photo" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : ''} ${donorMotherCow.name}</td>
                         </tr>
                         <tr>
                             <td style="padding: 8px; border: 1px solid var(--color-border);">Donadora/Padre:</td>
-                            <td style="padding: 8px; border: 1px solid var(--color-border);"><img src="${donorFatherPhoto}" alt="${donorFatherCow.name}" class="animal-photo" style="max-width: 100px; max-height: 100px; border-radius: 4px;"> ${donorFatherCow.name}</td>
+                            <td style="padding: 8px; border: 1px solid var(--color-border);">${donorFatherCow.registryId ? `<img src="${donorFatherPhoto}" alt="${donorFatherCow.name}" class="animal-photo" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : ''} ${donorFatherCow.name}</td>
                         </tr>
                         <tr>
                             <td style="padding: 8px; border: 1px solid var(--color-border);">Confirmación de Preñez:</td>
@@ -458,7 +459,12 @@ class EmbrioManager {
             className: `toast-${type}`,
             escapeMarkup: false,
             stopOnFocus: true,
-            style: { background: 'transparent', boxShadow: 'none', padding: '0' }
+            style: { 
+                background: 'transparent', 
+                boxShadow: 'none', 
+                padding: '0',
+                zIndex: 1001 // Aseguramos que el toast esté por encima del formulario
+            }
         }).showToast();
     }
 

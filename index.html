@@ -8,6 +8,7 @@
     <title>Sistema de Gestión Ganadera - Hacienda Hansen</title>
 
     <!-- Hojas de estilo locales -->
+     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/VaccineForm.css">
     <link rel="stylesheet" href="css/StyleTosty.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -172,13 +173,13 @@
                     </li>
 
                 </ul>
-                
-                   <li class="menu-item admin-conteiner" data-section="admin" style="display: none;">
-    <a href="#admin">
-        <i class="fa-solid fa-fingerprint"></i>
-        <span>Admin</span>
-    </a>
-</li>
+
+                <li class="menu-item admin-conteiner" data-section="admin" style="display: none;">
+                    <a href="#admin">
+                        <i class="fa-solid fa-fingerprint"></i>
+                        <span>Admin</span>
+                    </a>
+                </li>
             </nav>
 
             <!-- Contenido de las secciones -->
@@ -198,26 +199,26 @@
                             </div>
                         </div>
 
-           
-                   <!-- Targeta el Capital -->
-<!-- Targeta el Capital -->
-<div class="stat-card">
-    <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
-    <div class="stat-info">
-        <h3>Capital</h3>
-        <p id="peso-capetal" class="stat-value">N/A
-            <!-- Carga el peso total multiplicado por 1200 -->
-        </p>
-        <div class="btn-captal-container">
-            <button class="btn-details add-btn-detel btn-cambio">Colones
-                <!-- Botón para cambiar a colones que está a 500 -->
-            </button>
-            <button class="btn-details add-btn-detel btn-cambio">Dolar
-                <!-- Botón para cambiar a dólares -->
-            </button>
-        </div>
-    </div>
-</div>
+
+                        <!-- Targeta el Capital -->
+                        <!-- Targeta el Capital -->
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                            <div class="stat-info">
+                                <h3>Capital</h3>
+                                <p id="peso-capetal" class="stat-value">N/A
+                                    <!-- Carga el peso total multiplicado por 1200 -->
+                                </p>
+                                <div class="btn-captal-container">
+                                    <button class="btn-details add-btn-detel btn-cambio">Colones
+                                        <!-- Botón para cambiar a colones que está a 500 -->
+                                    </button>
+                                    <button class="btn-details add-btn-detel btn-cambio">Dolar
+                                        <!-- Botón para cambiar a dólares -->
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
 
                         <!-- Tarjeta de Peso Promedio -->
@@ -226,8 +227,8 @@
                             <div class="stat-info">
                                 <h3>Peso Promedio</h3>
                                 <p id="avg-weight" class="stat-value">N/A</p>
-                                       <h3>Peso total</h3>
-                                   <p id="total-weight" class="stat-value">N/A</p>
+                                <h3>Peso total</h3>
+                                <p id="total-weight" class="stat-value">N/A</p>
                             </div>
                         </div>
 
@@ -300,11 +301,17 @@
 
                 </div>
 
-              <div id="embriones" class="section">
-    <h2 class="section-title">Embriones</h2>
-    <button class="add-btn-embrion add-btn">+ Nuevo Embrion</button>
-    <!-- aquí dinámicamente cards -->
-</div>
+                <!--Seccion de Admin Ing Axel-->
+                <div id="admin" class="section">
+                    <h2 class="section-title">Admin</h2>
+                    <!-- cargará dinámicamente -->
+                </div>
+
+                <div id="embriones" class="section">
+                    <h2 class="section-title">Embriones</h2>
+                    <button class="add-btn-embrion add-btn">+ Nuevo Embrion</button>
+                    <!-- aquí dinámicamente cards -->
+                </div>
 
 
 
@@ -430,11 +437,13 @@
     <script src="js/DomManager.js"></script>
     <script src="Subasta/graficManager.js"></script>
     <script src="Subasta/graficServer.js"></script>
-   <script src="js/capitalManager.js" defer></script>
-   <script src="js/totalWeightManager.js" defer></script>
-   <script src="js/adminMenuVisibility.js" defer></script>
-   <script src="js/EmbrioManager.js"></script>
-  
+    <script src="js/capitalManager.js" defer></script>
+    <script src="js/totalWeightManager.js" defer></script>
+    <script src="js/adminMenuVisibility.js" defer></script>
+    <script src="js/EmbrioManager.js"></script>
+    <script src="js/admin.js"></script>
+    
+    <script src="/socket.io/socket.io.js"></script>.
     <!-- Consolidate Toastify CDN -->
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <!-- Module for ToastUtils -->
@@ -442,7 +451,7 @@
     <!-- PDF libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    
+
 </body>
 
 </html>

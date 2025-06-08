@@ -22,6 +22,9 @@ class NavigationManager {
                 if (sectionId === 'ganado') this.animalManager.renderAnimals();
                 else if (sectionId === 'sanidad') this.vaccineManager.renderVaccines();
                 else if (sectionId === 'dashboard') this.dashboardManager.updateDashboard();
+                else if (sectionId === 'admin' || sectionId === 'embriones') {
+                    this.handleSectionChange(sectionId);
+                }
             }
             console.log("Usuario logueado:", event.detail.userName);
         });
@@ -76,7 +79,21 @@ class NavigationManager {
                 if (sectionId === 'ganado') this.animalManager.renderAnimals();
                 else if (sectionId === 'sanidad') this.vaccineManager.renderVaccines();
                 else if (sectionId === 'dashboard') this.dashboardManager.updateDashboard();
+                else if (sectionId === 'admin' || sectionId === 'embriones') {
+                    this.handleSectionChange(sectionId);
+                }
+
+                document.dispatchEvent(new CustomEvent('sectionChange', { detail: { section: sectionId } }));
             });
         });
     }
+
+    handleSectionChange(sectionId) {
+        console.log(`Manejando cambio de sección: ${sectionId}`);
+    }
+}
+
+// Exportar la clase si usas módulos
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = NavigationManager;
 }

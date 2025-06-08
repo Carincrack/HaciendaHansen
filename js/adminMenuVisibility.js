@@ -1,16 +1,23 @@
 class AdminMenuVisibility {
     constructor() {
         this.adminMenuItem = null;
-        this.maxRetries = 10;
-        this.retryInterval = 1000;
-        this.retryCount = 0;
-        this.requiredId = atob('ODg3MDE='); // Decodifica 'ODg3MDE=' a '87301'
+
+        // Permitir múltiples IDs válidos para acceso de administrador
+        this.requiredIds = [atob('ODg3MDE='), atob('')]; //  ["50460"]
 
         this.init();
     }
 
     init() {
-        this.attemptToFindElements();
+        // Intentar encontrar el elemento inmediatamente
+        this.adminMenuItem = document.querySelector('.menu-item[data-section="admin"]');
+
+        if (!this.adminMenuItem) {
+            console.error('Elemento .menu-item[data-section="admin"] no encontrado en el DOM');
+            return; // Salir si no se encuentra el elemento
+        }
+
+        console.log('Elemento .menu-item[data-section="admin"] encontrado:', this.adminMenuItem);
 
         // Escuchar eventos de acceso y logout
         document.addEventListener('accessGranted', () => {
@@ -25,46 +32,34 @@ class AdminMenuVisibility {
                 this.checkVisibility();
             });
         }
-    }
 
-    attemptToFindElements() {
-        this.adminMenuItem = document.querySelector('.menu-item.admin-conteiner[data-section="admin"]');
-
-        if (!this.adminMenuItem) {
-            console.warn(`Intento ${this.retryCount + 1}: Elemento .menu-item.admin-conteiner no encontrado en el DOM`);
-            this.retryCount++;
-            if (this.retryCount < this.maxRetries) {
-                setTimeout(() => this.attemptToFindElements(), this.retryInterval);
-            } else {
-                console.error('No se pudo encontrar .menu-item.admin-conteiner después de varios intentos');
-            }
-            return;
-        }
-
-        console.log('Elemento .menu-item.admin-conteiner encontrado:', this.adminMenuItem);
+        // Verificar visibilidad inicial (por si localStorage ya tiene userId)
         this.checkVisibility();
     }
 
     checkVisibility() {
-        // Obtener el userId desde localStorage
         const userId = localStorage.getItem('userId') || '';
         console.log('userId obtenido de localStorage:', userId);
-        console.log('requiredId esperado:', this.requiredId);
+        console.log('IDs permitidos para admin:', this.requiredIds);
 
-        // Comparar con el valor decodificado
-        if (userId === this.requiredId) {
-            this.adminMenuItem.style.display = 'block'; // Mostrar el elemento
-            console.log('Acceso de administrador concedido: userId coincide con', this.requiredId);
+        if (this.requiredIds.includes(userId)) {
+            this.adminMenuItem.style.display = 'block'; // Mostrar para usuarios válidos
+            console.log('Acceso de administrador concedido: userId coincide con uno de los permitidos');
         } else {
-            this.adminMenuItem.style.display = 'none'; // Ocultar el elemento
-            console.log('Acceso de administrador denegado: userId no coincide. userId:', userId, 'esperado:', this.requiredId);
+            this.adminMenuItem.style.display = 'none'; // Ocultar para cualquier otro userId
+            console.log('Acceso de administrador denegado: userId no permitido');
         }
     }
 }
 
-window.AdminMenuVisibility = AdminMenuVisibility;
+// Exportar la clase si usas módulos, o asignarla a window para uso global
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = AdminMenuVisibility;
+} else {
+    window.AdminMenuVisibility = AdminMenuVisibility;
+}
 
-// Instanciar AdminMenuVisibility automáticamente
+// Inicializar la clase al cargar el DOM
 document.addEventListener('DOMContentLoaded', () => {
     new AdminMenuVisibility();
 });

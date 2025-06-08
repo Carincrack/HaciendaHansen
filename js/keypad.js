@@ -5,7 +5,7 @@ class Keypad {
             "NTgzNjA=": "Scott",
             "NTA0NjA=": "Kevin", 
             "OTk5OTk=": "Kiana",
-            "ODg3MDE=": "Admin",
+            "ODg3MDE=": "Ing Axel",
         });
         
         // Estado inicial

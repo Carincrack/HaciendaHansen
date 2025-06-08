@@ -4,9 +4,16 @@ const path = require('path');
 const cors = require('cors');
 const multer = require('multer');
 const bodyParser = require('body-parser');
+const http = require('http'); // Para socket.io
+const socketIo = require('socket.io'); // Para WebSocket
+const ServerAdmin = require('./ServerAdmin'); // Importa el módulo de administración
 
 const app = express();
 const PORT = 3000;
+
+// Crear el servidor HTTP y montar socket.io
+const server = http.createServer(app);
+const io = socketIo(server);
 
 // Definir la ruta base del proyecto
 const PROJECT_DIR = path.join(__dirname, 'base_data');
@@ -16,19 +23,16 @@ const ARCHIVOS_DIR = path.join(VACCINE_DIR, 'archivos');
 const EMBRYO_DIR = path.join(PROJECT_DIR, 'embriones_data');
 console.log('Ruta de EMBRYO_DIR:', EMBRYO_DIR);
 
-// Verificar y mostrar la ruta absoluta para depuración
 console.log('Ruta de PROJECT_DIR:', PROJECT_DIR);
 console.log('Ruta de VACCINE_DIR:', VACCINE_DIR);
 console.log('Ruta de ARCHIVOS_DIR:', ARCHIVOS_DIR);
 
-// Funciones para obtener las rutas dinámicas según el nombre del animal
 const getAnimalDir = (animalName) => path.join(BASE_DIR, animalName);
 const getDataDir = (animalName) => path.join(getAnimalDir(animalName), 'datos');
 const getProfileDir = (animalName) => path.join(getAnimalDir(animalName), 'perfil');
 const getTitleDir = (animalName) => path.join(getAnimalDir(animalName), 'titulo');
 const getEmbryoDir = (embryoId) => path.join(EMBRYO_DIR, embryoId);
 
-// Configuración de multer para manejar la subida de imágenes (para animales)
 const storage = multer.diskStorage({
     destination: async (req, file, cb) => {
         const animalName = req.body.animalName || 'temp';
@@ -70,7 +74,6 @@ const upload = multer({
     fileFilter: fileFilter
 }).single('photo');
 
-// Configuración de multer para manejar la subida de archivos de vacunas
 const vaccineStorage = multer.diskStorage({
     destination: async (req, file, cb) => {
         try {
@@ -109,7 +112,6 @@ const vaccineUpload = multer({
     fileFilter: vaccineFileFilter
 }).single('file');
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -122,7 +124,6 @@ app.use('/Proyecto_Hacienda_HXX/animal-data', (req, res, next) => {
 }, express.static(path.join(PROJECT_DIR, 'animal-data')));
 app.use('/Proyecto_Hacienda_HXX/data_vacunas/archivos', express.static(ARCHIVOS_DIR));
 
-// Asegurarse de que la estructura de carpetas base exista al iniciar
 async function ensureBaseDirs() {
     try {
         await fs.mkdir(PROJECT_DIR, { recursive: true });
@@ -141,10 +142,8 @@ async function ensureBaseDirs() {
     }
 }
 
-// Ejecutar ensureBaseDirs al iniciar el servidor
 ensureBaseDirs();
 
-// Importar las rutas de embriones y pasar las dependencias necesarias
 const embryoRoutes = require('./embryoRoutes')({
     fs,
     path,
@@ -154,7 +153,6 @@ const embryoRoutes = require('./embryoRoutes')({
 });
 app.use('/embryo', embryoRoutes);
 
-// Endpoint para cargar todos los animales
 app.get('/animals', async (req, res) => {
     try {
         await ensureBaseDirs();
@@ -191,7 +189,6 @@ app.get('/animals', async (req, res) => {
     }
 });
 
-// Endpoint para guardar un animal
 app.post('/animals', async (req, res) => {
     try {
         await ensureBaseDirs();
@@ -216,7 +213,6 @@ app.post('/animals', async (req, res) => {
     }
 });
 
-// Endpoint para subir fotos de animales
 app.post('/upload-profile-photo', (req, res, next) => {
     console.log("Solicitud recibida en /upload-profile-photo");
     console.log("Headers:", req.headers);
@@ -278,7 +274,6 @@ app.post('/upload-profile-photo', (req, res, next) => {
     }
 });
 
-// Endpoint para eliminar un animal
 app.delete('/animals/:id', async (req, res) => {
     try {
         const animalId = req.params.id;
@@ -313,7 +308,6 @@ app.delete('/animals/:id', async (req, res) => {
     }
 });
 
-// Endpoint para eliminar la carpeta de un animal por nombre
 app.post('/delete-animal-folder', async (req, res) => {
     try {
         const { animalName } = req.body;
@@ -336,7 +330,6 @@ app.post('/delete-animal-folder', async (req, res) => {
     }
 });
 
-// Endpoint para obtener todas las vacunas
 app.get('/api/vaccines', async (req, res) => {
     try {
         await ensureBaseDirs();
@@ -368,7 +361,6 @@ app.get('/api/vaccines', async (req, res) => {
     }
 });
 
-// Nuevo endpoint para guardar una vacuna por animal
 app.post('/api/vaccines/save-per-animal', async (req, res) => {
     try {
         const { animalName, vaccine, fileName } = req.body;
@@ -399,7 +391,6 @@ app.post('/api/vaccines/save-per-animal', async (req, res) => {
     }
 });
 
-// Endpoint para actualizar una vacuna por ID
 app.patch('/api/vaccines/:id', async (req, res) => {
     try {
         const vaccineId = req.params.id;
@@ -446,7 +437,6 @@ app.patch('/api/vaccines/:id', async (req, res) => {
     }
 });
 
-// Endpoint para eliminar una vacuna por ID
 app.delete('/api/vaccines/:id', async (req, res) => {
     try {
         const vaccineId = req.params.id;
@@ -478,7 +468,6 @@ app.delete('/api/vaccines/:id', async (req, res) => {
     }
 });
 
-// Endpoint para subir archivos asociados a una vacuna
 app.post('/api/vaccines/upload-file', vaccineUpload, async (req, res) => {
     try {
         if (!req.file) {
@@ -508,7 +497,6 @@ app.post('/api/vaccines/upload-file', vaccineUpload, async (req, res) => {
     }
 });
 
-// Obtener estadísticas para el dashboard
 app.get('/dashboard-stats', async (req, res) => {
     try {
         await ensureBaseDirs();
@@ -600,6 +588,9 @@ app.get('/dashboard-stats', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+// Inicializa el módulo de administración
+new ServerAdmin(io);
+
+server.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
