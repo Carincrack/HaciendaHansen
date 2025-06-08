@@ -9,70 +9,72 @@ class AdminConsole {
             memory: [],
             timestamps: []
         };
+        this.eventListeners = new Map();
         this.init();
     }
 
     init() {
         this.setupEventListeners();
         this.checkVisibility();
+
+        // Limpiar al cerrar o recargar la página
+        window.addEventListener('beforeunload', () => this.cleanup());
     }
 
     setupEventListeners() {
+        const addListener = (event, callback) => {
+            const listener = this.socket.on(event, callback);
+            this.eventListeners.set(event, listener);
+        };
+
         document.addEventListener('sectionChange', (e) => {
             console.log('Evento sectionChange recibido:', e.detail.section);
             this.checkVisibility(e.detail.section);
         });
 
-        // Sistema de estadísticas mejorado
-        this.socket.on('systemStats', (stats) => {
+        addListener('systemStats', (stats) => {
             console.log('Datos del sistema recibidos:', stats);
             if (this.adminContainer.style.display !== 'none' && this.isInitialized) {
                 this.updateSystemStats(stats);
             }
         });
 
-        // Información de procesos
-        this.socket.on('processInfo', (processes) => {
+        addListener('processInfo', (processes) => {
             console.log('Información de procesos recibida:', processes);
             if (this.adminContainer.style.display !== 'none' && this.isInitialized) {
                 this.updateProcessList(processes);
             }
         });
 
-        // Logs del servidor
-        this.socket.on('serverLogs', (log) => {
+        addListener('serverLogs', (log) => {
             console.log('Log del servidor:', log);
             if (this.adminContainer.style.display !== 'none' && this.isInitialized) {
                 this.addLogEntry(log);
             }
         });
 
-        // Información de red
-        this.socket.on('networkStats', (netStats) => {
+        addListener('networkStats', (netStats) => {
             console.log('Estadísticas de red:', netStats);
             if (this.adminContainer.style.display !== 'none' && this.isInitialized) {
                 this.updateNetworkStats(netStats);
             }
         });
 
-        // Información del sistema de archivos
-        this.socket.on('diskUsage', (diskInfo) => {
+        addListener('diskUsage', (diskInfo) => {
             console.log('Uso de disco:', diskInfo);
             if (this.adminContainer.style.display !== 'none' && this.isInitialized) {
                 this.updateDiskUsage(diskInfo);
             }
         });
 
-        // Usuarios conectados
-        this.socket.on('connectedUsers', (users) => {
+        addListener('connectedUsers', (users) => {
             console.log('Usuarios conectados:', users);
             if (this.adminContainer.style.display !== 'none' && this.isInitialized) {
                 this.updateConnectedUsers(users);
             }
         });
 
-        // Errores del sistema
-        this.socket.on('systemError', (error) => {
+        addListener('systemError', (error) => {
             console.error('Error del sistema:', error);
             if (this.adminContainer.style.display !== 'none' && this.isInitialized) {
                 this.addErrorLog(error);
@@ -88,16 +90,16 @@ class AdminConsole {
                 this.setupUI();
                 this.isInitialized = true;
                 console.log('Interfaz de admin inicializada');
-                this.requestInitialData();
+                this.socket.emit('startMonitoring'); // Iniciar monitoreo al entrar
             }
             this.adminContainer.style.display = 'block';
         } else {
+            this.socket.emit('stopMonitoring'); // Detener monitoreo al salir
             this.adminContainer.style.display = 'none';
         }
     }
 
     requestInitialData() {
-        // Solicitar datos iniciales al servidor
         this.socket.emit('requestSystemStats');
         this.socket.emit('requestProcessInfo');
         this.socket.emit('requestNetworkStats');
@@ -236,14 +238,12 @@ class AdminConsole {
         document.getElementById('admin-sys-free-memory').textContent = stats.freeMemory || '0 GB';
         document.getElementById('admin-sys-timestamp').textContent = stats.timestamp || new Date().toLocaleString();
 
-        // Actualizar barras de progreso
         const cpuPercent = parseFloat(stats.cpuUsage) || 0;
         const memoryPercent = parseFloat(stats.memoryUsage) || 0;
         
         document.getElementById('admin-sys-cpu-bar').style.width = cpuPercent + '%';
         document.getElementById('admin-sys-memory-bar').style.width = memoryPercent + '%';
 
-        // Cambiar colores según el uso
         this.updateProgressBarColor('admin-sys-cpu-bar', cpuPercent);
         this.updateProgressBarColor('admin-sys-memory-bar', memoryPercent);
     }
@@ -265,7 +265,6 @@ class AdminConsole {
             processList.innerHTML = '<div class="admin-sys-no-data">No hay procesos disponibles</div>';
             return;
         }
-
         processList.innerHTML = processes.slice(0, 10).map(proc => `
             <div class="admin-sys-table-row">
                 <div class="admin-sys-table-cell">${proc.pid}</div>
@@ -288,7 +287,6 @@ class AdminConsole {
             diskList.innerHTML = '<div class="admin-sys-no-data">No hay información de disco</div>';
             return;
         }
-
         diskList.innerHTML = diskInfo.map(disk => `
             <div class="admin-sys-disk-item">
                 <div class="admin-sys-disk-name">${disk.filesystem}</div>
@@ -306,14 +304,11 @@ class AdminConsole {
     updateConnectedUsers(users) {
         const userList = document.getElementById('admin-sys-user-list');
         const userCount = document.getElementById('admin-sys-user-count');
-        
         userCount.textContent = users.length;
-
         if (!users || users.length === 0) {
             userList.innerHTML = '<div class="admin-sys-no-data">No hay usuarios conectados</div>';
             return;
         }
-
         userList.innerHTML = users.map(user => `
             <div class="admin-sys-user-item">
                 <div class="admin-sys-user-avatar"></div>
@@ -335,14 +330,8 @@ class AdminConsole {
             <span class="admin-sys-log-level">${log.level || 'INFO'}</span>
             <span class="admin-sys-log-message">${log.message}</span>
         `;
-        
         consoleLog.appendChild(logEntry);
-        
-        // Mantener solo los últimos 50 logs
-        if (consoleLog.children.length > 50) {
-            consoleLog.removeChild(consoleLog.firstChild);
-        }
-        
+        if (consoleLog.children.length > 50) consoleLog.removeChild(consoleLog.firstChild);
         consoleLog.scrollTop = consoleLog.scrollHeight;
     }
 
@@ -353,9 +342,21 @@ class AdminConsole {
             timestamp: new Date().toLocaleTimeString()
         });
     }
+
+    cleanup() {
+        this.socket.emit('stopMonitoring');
+        this.eventListeners.forEach((listener, event) => {
+            this.socket.off(event, listener);
+        });
+        this.eventListeners.clear();
+        this.socket.disconnect();
+        console.log('Conexión WebSocket y listeners limpiados');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (!window.adminConsoleInstance) {
+        window.adminConsoleInstance = new AdminConsole();
+    }
     console.log('AdminConsole inicializado');
-    new AdminConsole();
 });
