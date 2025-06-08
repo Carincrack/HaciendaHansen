@@ -7,9 +7,13 @@ const bodyParser = require('body-parser');
 const http = require('http'); // Para socket.io
 const socketIo = require('socket.io'); // Para WebSocket
 const ServerAdmin = require('./ServerAdmin'); // Importa el módulo de administración
+const rateLimit = require('express-rate-limit'); // Añadimos rate limiting
 
 const app = express();
 const PORT = 3000;
+
+// Middleware de límite de solicitudes
+
 
 // Crear el servidor HTTP y montar socket.io
 const server = http.createServer(app);
