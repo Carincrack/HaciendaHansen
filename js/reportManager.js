@@ -756,35 +756,46 @@ class ReportManager {
         }
     }
 
-    showToast(message, type = "info", options = {}) {
-        const { duration = 3000, showIcon = true } = options;
-
-        // Preparar el contenido
-        let content;
-        if (showIcon) {
-            content = `<div class="toast-content"><span class="toast-icon"></span>${message}</div>`;
-        } else {
-            content = `<div class="toast-content">${message}</div>`;
-            type = "no-icon";
-        }
-
-        Toastify({
-            text: content,
-            duration: duration,
-            close: true,
-            gravity: "top",
-            position: "right",
-            className: `toast-${type}`,
-            escapeMarkup: false,
-            stopOnFocus: true,
-            style: {
-                background: "transparent",
-                boxShadow: "none",
-                padding: "0",
-            },
-        }).showToast();
+ showToast(message, type = "info", options = {}) {
+    // Evitar toasts duplicados del mismo mensaje
+    if (this.lastToast && this.lastToast.message === message && 
+        (Date.now() - this.lastToast.timestamp) < 2000) {
+        return;
     }
 
+    const { duration = 3000, showIcon = true } = options;
+
+    // Registrar el último toast mostrado
+    this.lastToast = {
+        message: message,
+        timestamp: Date.now()
+    };
+
+    // Preparar el contenido
+    let content;
+    if (showIcon) {
+        content = `<div class="toast-content"><span class="toast-icon"></span>${message}</div>`;
+    } else {
+        content = `<div class="toast-content">${message}</div>`;
+        type = "no-icon";
+    }
+
+    Toastify({
+        text: content,
+        duration: duration,
+        close: true,
+        gravity: "top",
+        position: "right",
+        className: `toast-${type}`,
+        escapeMarkup: false,
+        stopOnFocus: true,
+        style: {
+            background: "transparent",
+            boxShadow: "none",
+            padding: "0",
+        },
+    }).showToast();
+}
     initialize() {
         const reportSection = document.getElementById("reportes");
         console.log(
