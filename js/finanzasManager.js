@@ -78,7 +78,16 @@ class FinanzasManager {
         const totalEntradas = entradas.reduce((sum, item) => sum + (item.monto || 0), 0);
         const totalSalidas = salidas.reduce((sum, item) => sum + (item.monto || 0), 0);
         const resultado = totalEntradas - totalSalidas;
-        resultadoFinanzas.value = resultado.toFixed(2);
+        resultadoFinanzas.value = `₡${this.formatCurrency(resultado)}`;
+    }
+
+    // Función para formatear moneda en estilo costarricense (CRC)
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('es-CR', {
+            style: 'decimal',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
     }
 
     showForm(tipo, itemToEdit = null) {

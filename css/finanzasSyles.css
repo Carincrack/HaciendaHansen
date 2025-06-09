@@ -11,7 +11,6 @@
     --color-error: #e11e1e;
     --color-bg-light: #f9f9f9;
     --color-bg-dark: #34495e;
-    --color-text: #333;
     --color-text-light: #757575;
     --color-text-white: #ffffff;
     --color-border: #e0e0e0;
@@ -45,7 +44,6 @@
 }
 
 #finanzas .section-title {
-    color: #1e293b;
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: 24px;
@@ -175,7 +173,6 @@
 }
 
 #finanzas .factura strong {
-    color: #1e293b;
     font-size: 1rem;
     font-weight: 600;
     display: block;

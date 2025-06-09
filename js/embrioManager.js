@@ -92,8 +92,8 @@ class EmbrioManager {
                 <div class="form-group">
                     <label style="color: var(--color-text); font-weight: 500;">Confirmación de Preñez:</label>
                     <select id="pregnancyConfirmation" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
-                        <option value="50" ${isEditMode && embryo.pregnancyConfirmation === '50' ? 'selected' : ''}>50 días</option>
-                        <option value="custom" ${isEditMode && embryo.pregnancyConfirmation !== '50' ? 'selected' : ''}>Personalizado</option>
+                        <option value="50" ${isEditMode ? '' : 'selected'}>50 días</option>
+                        <option value="custom">Personalizado</option>
                     </select>
                     <input type="number" id="customCountdown" style="display: ${isEditMode && embryo.pregnancyConfirmation !== '50' ? 'block' : 'none'}; width: 100%; padding: 8px; margin-top: 5px; border: 1px solid var(--color-border); border-radius: var(--border-radius);"
                            placeholder="Días personalizados" min="1" value="${isEditMode && embryo.pregnancyConfirmation !== '50' ? embryo.pregnancyConfirmation : ''}">
@@ -147,7 +147,8 @@ class EmbrioManager {
                 donorFatherId,
                 pregnancyConfirmation: countdownDays,
                 timestamp: new Date().toISOString(),
-                embryoId: isEditMode ? embryo.embryoId : `E${Date.now()}`
+                embryoId: isEditMode ? embryo.embryoId : `E${Date.now()}`,
+                confirmed: isEditMode ? embryo.confirmed : false
             };
 
             try {
@@ -270,14 +271,18 @@ class EmbrioManager {
 
             const embryoCard = document.createElement('div');
             embryoCard.className = 'animal-card';
+            embryoCard.style.cssText = `
+                ${embryo.confirmed ? 'background-color: rgba(135, 206, 235, 0.5);' : embryo.confirmed === false ? 'background-color: rgba(255, 105, 97, 0.5);' : ''}
+            `;
             embryoCard.innerHTML = `
                 <h3>Embrión ${embryo.embryoId}</h3>
                 <p><strong>Receptor:</strong> ${cowNames.receptor}</p>
                 <p><strong>Donadora/Madre:</strong> ${cowNames.donorMother}</p>
                 <p><strong>Donadora/Padre:</strong> ${cowNames.donorFather}</p>
                 <p><strong>Confirmación de Preñez:</strong> ${embryo.pregnancyConfirmation} días</p>
-                <div id="countdown-${embryo.embryoId}" class="countdown">Cuenta regresiva: Calculando...</div>
+                <div id="countdown-${embryo.embryoId}" class="countdown">${embryo.confirmed ? 'Estado de Gestación: Calculando...' : embryo.confirmed === false ? '' : `Cuenta regresiva: ${embryo.pregnancyConfirmation}d`}</div>
                 <div class="vaccine-actions">
+                    <button class="btn-confirm-embryo" data-id="${embryo.embryoId}">Confirmar</button>
                     <button class="btn-edit-embryo" data-id="${embryo.embryoId}">Editar</button>
                     <button class="btn-delete-embryo" data-id="${embryo.embryoId}">Eliminar</button>
                     <button class="btn-info-embryo" data-id="${embryo.embryoId}">Ver Info</button>
@@ -286,7 +291,20 @@ class EmbrioManager {
 
             embryoList.appendChild(embryoCard);
 
-            this.startCountdown(embryo.embryoId, embryo.pregnancyConfirmation);
+            if (embryo.confirmed) {
+                this.startCountdown(embryo.embryoId, 220, embryo.timestamp); // 9 meses (270 días) - 50 días
+            } else if (embryo.confirmed === false) {
+                // No iniciar cuenta regresiva si no confirmado
+            } else {
+                this.startCountdown(embryo.embryoId, embryo.pregnancyConfirmation, embryo.timestamp);
+            }
+
+            document.querySelectorAll('.btn-confirm-embryo').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.confirmEmbryo(e.target.dataset.id);
+                });
+            });
         });
 
         document.querySelectorAll('.btn-edit-embryo').forEach(btn => {
@@ -309,9 +327,10 @@ class EmbrioManager {
         });
     }
 
-    startCountdown(embryoId, days) {
+    startCountdown(embryoId, days, startTimestamp) {
         const countdownElement = document.getElementById(`countdown-${embryoId}`);
-        const targetDate = new Date().getTime() + (parseInt(days) * 24 * 60 * 60 * 1000);
+        const startDate = new Date(startTimestamp).getTime();
+        const targetDate = startDate + (parseInt(days) * 24 * 60 * 60 * 1000);
 
         const updateCountdown = () => {
             const now = new Date().getTime();
@@ -327,11 +346,28 @@ class EmbrioManager {
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            countdownElement.textContent = `Cuenta regresiva: ${daysLeft}d ${hours}h ${minutes}m ${seconds}s`;
+            countdownElement.textContent = `faltan ${daysLeft}d ${hours}h ${minutes}m ${seconds}s`;
             setTimeout(updateCountdown, 1000);
         };
 
         updateCountdown();
+    }
+
+    async confirmEmbryo(embryoId) {
+        const embryo = this.embryos.find(e => e.embryoId === embryoId);
+        if (!embryo) return;
+
+        const result = await this.showConfirmation('¿Confirmar embarazo?');
+        if (result) {
+            embryo.confirmed = true;
+            await this.updateEmbryo(embryo);
+            this.showToast('Embarazo confirmado', 'success');
+        } else if (result !== undefined) { // Solo actualizar si se seleccionó Sí o No
+            embryo.confirmed = false;
+            await this.updateEmbryo(embryo);
+            this.showToast('Embarazo no confirmado', 'info');
+        }
+        await this.loadEmbryos();
     }
 
     editEmbryo(embryoId) {
@@ -485,9 +521,11 @@ class EmbrioManager {
                 background-color: var(--color-bg-light); padding: 20px; border-radius: var(--border-radius);
                 width: 90%; max-width: 400px; box-shadow: var(--shadow-soft);
                 text-align: center; color: var(--color-text);
+                position: relative;
             `;
 
             modal.innerHTML = `
+                <span class="close-modal" style="position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 1.5rem; color: var(--color-text);">×</span>
                 <p style="font-size: 1.2rem; font-weight: 500; margin-bottom: 20px;">${message}</p>
                 <div style="display: flex; justify-content: center; gap: 10px;">
                     <button class="btn-confirm-yes" style="padding: 8px 16px; background-color: var(--color-success); color: var(--color-text-white); border: 1px solid var(--color-border); border-radius: var(--border-radius);">Sí</button>
@@ -499,13 +537,14 @@ class EmbrioManager {
                 if (overlay && document.body.contains(overlay)) {
                     document.body.removeChild(overlay);
                 }
+                // No resolver la promesa al cerrar con la X
             };
 
+            modal.querySelector('.close-modal').addEventListener('click', closeModal);
             modal.querySelector('.btn-confirm-yes').addEventListener('click', () => {
                 resolve(true);
                 closeModal();
             });
-
             modal.querySelector('.btn-confirm-no').addEventListener('click', () => {
                 resolve(false);
                 closeModal();

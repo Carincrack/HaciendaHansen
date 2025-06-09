@@ -23,6 +23,10 @@ class AnimalManager {
             const animalCard = document.createElement('div');
             animalCard.classList.add('animal-card');
 
+            const imgContainer = document.createElement('div');
+            imgContainer.classList.add('img-container');
+            imgContainer.style.position = 'relative';
+
             const img = document.createElement('img');
             img.alt = `Foto de ${animal.name}`;
             img.classList.add('animal-photo');
@@ -51,6 +55,21 @@ class AnimalManager {
 
             tryExtensions();
 
+            // Añadir botón de ojo para ver en pantalla completa
+            const viewButton = document.createElement('button');
+            viewButton.classList.add('view-photo-btn');
+            viewButton.innerHTML = '<i class="fa-solid fa-eye"></i>'; // Icono de ojo
+            viewButton.style.cssText = `
+                position: absolute; bottom: 6px; right: 6px;
+                background-color: rgba(0, 0, 0, 0.6); color: white;
+                border: none; border-radius: 50%; padding: 5px;
+                cursor: pointer; font-size: 1.2rem;
+            `;
+            viewButton.addEventListener('click', () => this.showFullScreenPhoto(animal.registryId));
+
+            imgContainer.appendChild(img);
+            imgContainer.appendChild(viewButton);
+
             animalCard.innerHTML += `
                 <h3>${animal.name} (${animal.registryId})</h3>
                 <p>Registro: ${animal.registryId || 'N/A'}</p>
@@ -63,7 +82,7 @@ class AnimalManager {
                 </div>
             `;
 
-            animalCard.insertBefore(img, animalCard.firstChild);
+            animalCard.insertBefore(imgContainer, animalCard.firstChild);
             animalList.appendChild(animalCard);
         });
 
@@ -73,6 +92,53 @@ class AnimalManager {
 
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', (e) => this.deleteAnimal(e.target.dataset.id));
+        });
+    }
+
+    showFullScreenPhoto(registryId) {
+        const photoUrl = this.getAnimalPhoto(registryId);
+        if (!photoUrl) {
+            this.showToast('No se encontró la foto de perfil.', 'error');
+            return;
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'fullscreen-overlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1001;
+        `;
+
+        const fullScreenImg = document.createElement('img');
+        fullScreenImg.src = photoUrl;
+        fullScreenImg.style.cssText = `
+            max-width: 90%; max-height: 90%;
+            border-radius: 4px; cursor: pointer;
+        `;
+
+        const closeButton = document.createElement('button');
+        closeButton.innerHTML = '✖';
+        closeButton.style.cssText = `
+            position: absolute; top: 10px; right: 10px;
+            background-color: rgba(255, 255, 255, 0.8); color: black;
+            border: none; border-radius: 50%; padding: 5px 10px;
+            cursor: pointer; font-size: 1.5rem;
+        `;
+        closeButton.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+        });
+
+        overlay.appendChild(fullScreenImg);
+        overlay.appendChild(closeButton);
+        document.body.appendChild(overlay);
+
+        // Cerrar con clic fuera de la imagen
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+            }
         });
     }
 
