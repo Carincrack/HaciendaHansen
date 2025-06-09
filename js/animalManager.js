@@ -23,6 +23,10 @@ class AnimalManager {
             const animalCard = document.createElement('div');
             animalCard.classList.add('animal-card');
 
+            const imgContainer = document.createElement('div');
+            imgContainer.classList.add('img-container');
+            imgContainer.style.position = 'relative';
+
             const img = document.createElement('img');
             img.alt = `Foto de ${animal.name}`;
             img.classList.add('animal-photo');
@@ -31,7 +35,7 @@ class AnimalManager {
             const tryExtensions = async () => {
                 for (const ext of extensionsToTry) {
                     const url = `http://localhost:3000/Proyecto_Hacienda_HXX/animal-data/${nameEncoded}/perfil/${cleanRegistryId}.${ext}`;
-                    
+
                     const testImage = new Image();
                     testImage.src = url;
 
@@ -51,6 +55,21 @@ class AnimalManager {
 
             tryExtensions();
 
+            // Añadir botón de ojo para ver en pantalla completa
+            const viewButton = document.createElement('button');
+            viewButton.classList.add('view-photo-btn');
+            viewButton.innerHTML = '<i class="fa-solid fa-eye"></i>'; // Icono de ojo
+            viewButton.style.cssText = `
+                position: absolute; bottom: 6px; right: 6px;
+                background-color: rgba(0, 0, 0, 0.6); color: white;
+                border: none; border-radius: 50%; padding: 5px;
+                cursor: pointer; font-size: 1.2rem;
+            `;
+            viewButton.addEventListener('click', () => this.showFullScreenPhoto(animal.registryId));
+
+            imgContainer.appendChild(img);
+            imgContainer.appendChild(viewButton);
+
             animalCard.innerHTML += `
                 <h3>${animal.name} (${animal.registryId})</h3>
                 <p>Registro: ${animal.registryId || 'N/A'}</p>
@@ -63,7 +82,7 @@ class AnimalManager {
                 </div>
             `;
 
-            animalCard.insertBefore(img, animalCard.firstChild);
+            animalCard.insertBefore(imgContainer, animalCard.firstChild);
             animalList.appendChild(animalCard);
         });
 
@@ -73,6 +92,53 @@ class AnimalManager {
 
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', (e) => this.deleteAnimal(e.target.dataset.id));
+        });
+    }
+
+    showFullScreenPhoto(registryId) {
+        const photoUrl = this.getAnimalPhoto(registryId);
+        if (!photoUrl) {
+            this.showToast('No se encontró la foto de perfil.', 'error');
+            return;
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'fullscreen-overlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1001;
+        `;
+
+        const fullScreenImg = document.createElement('img');
+        fullScreenImg.src = photoUrl;
+        fullScreenImg.style.cssText = `
+            max-width: 90%; max-height: 90%;
+            border-radius: 4px; cursor: pointer;
+        `;
+
+        const closeButton = document.createElement('button');
+        closeButton.innerHTML = '✖';
+        closeButton.style.cssText = `
+            position: absolute; top: 10px; right: 10px;
+            background-color: rgba(255, 255, 255, 0.8); color: black;
+            border: none; border-radius: 50%; padding: 5px 10px;
+            cursor: pointer; font-size: 1.5rem;
+        `;
+        closeButton.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+        });
+
+        overlay.appendChild(fullScreenImg);
+        overlay.appendChild(closeButton);
+        document.body.appendChild(overlay);
+
+        // Cerrar con clic fuera de la imagen
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+            }
         });
     }
 
@@ -88,7 +154,7 @@ class AnimalManager {
             display: flex; justify-content: center; align-items: center;
             z-index: 1000;
         `;
-        
+
         const form = document.createElement('div');
         form.className = 'animal-form';
         form.style.cssText = `
@@ -96,11 +162,11 @@ class AnimalManager {
             width: 90%; max-width: 500px; max-height: 90vh;
             overflow-y: auto; box-shadow: var(--shadow-soft);
         `;
-        
+
         const isEditMode = animalToEdit !== null;
         const currentPhoto = isEditMode ? this.getAnimalPhoto(animalToEdit.registryId) : null;
         const currentTitlePhoto = isEditMode ? this.getAnimalTitlePhoto(animalToEdit.registryId) : null;
-        
+
         form.innerHTML = `
             <h2 style="margin-top: 0; color: var(--color-text); font-size: 1.8rem; font-weight: 600;">${isEditMode ? 'Editar' : 'Registrar'} Animal</h2>
             <form id="new-animal-form">
@@ -141,19 +207,27 @@ class AnimalManager {
                            style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid var(--color-border); border-radius: var(--border-radius);">
                 </div>
                 <div class="form-group">
-                    <label style="color: var(--color-text); font-weight: 500;">Foto de Perfil ${!isEditMode ? '(Obligatoria)' : ''}:</label>
+                <label class="custom-file-label">
+                    <span class="custom-file-btn">Seleccionar foto</span>
                     <input type="file" id="animal-photo" accept="image/*" ${!isEditMode ? 'required' : ''}>
-                    <div id="photo-preview" style="margin-top: 10px;">
-                        ${currentPhoto ? `<img src="${currentPhoto}" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : ''}
-                    </div>
+                </label>
+
+                <div id="photo-preview" style="margin-top: 10px;">
+                    ${currentPhoto ? `<img src="${currentPhoto}" style="max-width: 200px; max-height: 100px; border-radius: 4px;">` : ''}
                 </div>
-                <div class="form-group">
-                    <label style="color: var(--color-text); font-weight: 500;">Foto de Título (Opcional):</label>
+                </div>
+
+                            <div class="form-group">
+                <label class="custom-file-label">
+                    <span class="custom-file-btn">Seleccionar foto de título</span>
                     <input type="file" id="animal-title-photo" accept="image/*">
-                    <div id="title-photo-preview" style="margin-top: 10px;">
-                        ${currentTitlePhoto ? `<img src="${currentTitlePhoto}" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : ''}
-                    </div>
+                </label>
+
+                <div id="title-photo-preview" style="margin-top: 10px;">
+                    ${currentTitlePhoto ? `<img src="${currentTitlePhoto}" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : ''}
                 </div>
+                </div>
+
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
                     <button type="button" id="reset-form" class="btn-reset" style="padding: 8px 16px; background-color: var(--color-primary); color: var(--color-text-white); border: 1px solid var(--color-border); border-radius: var(--border-radius);">Limpiar</button>
                     <button type="button" id="cancel-form" class="btn-cancel" style="padding: 8px 16px; background-color: var(--color-error); color: var(--color-text-white); border: 1px solid var(--color-border); border-radius: var(--border-radius);">Cancelar</button>
@@ -161,12 +235,12 @@ class AnimalManager {
                 </div>
             </form>
         `;
-        
+
         const photoInput = form.querySelector('#animal-photo');
         const photoPreview = form.querySelector('#photo-preview');
         const titlePhotoInput = form.querySelector('#animal-title-photo');
         const titlePhotoPreview = form.querySelector('#title-photo-preview');
-        
+
         const breedSelect = form.querySelector('#animal-breed');
         const customBreedInput = form.querySelector('#custom-breed');
 
@@ -227,7 +301,7 @@ class AnimalManager {
                 reader.readAsDataURL(file);
             }
         });
-        
+
         const closeForm = () => {
             if (overlay && document.body.contains(overlay)) {
                 document.body.removeChild(overlay);
@@ -242,12 +316,12 @@ class AnimalManager {
             customBreedInput.style.display = 'none';
             customBreedInput.value = '';
         });
-        
+
         form.querySelector('#cancel-form').addEventListener('click', closeForm);
-        
+
         form.querySelector('#new-animal-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const animalData = {
                 id: isEditMode ? animalToEdit.id : `A${(this.dataManager.getAnimals().length + 1).toString().padStart(3, '0')}`,
                 name: form.querySelector('#animal-name').value,
@@ -266,20 +340,20 @@ class AnimalManager {
             try {
                 const photoFile = form.querySelector('#animal-photo').files[0];
                 const titlePhotoFile = form.querySelector('#animal-title-photo').files[0];
-                
+
                 let oldName = null;
                 let nameChanged = false;
-                
+
                 if (isEditMode) {
                     oldName = animalToEdit.name;
                     nameChanged = oldName !== animalData.name;
                 }
-                
+
                 if (!isEditMode && !photoFile) {
                     this.showToast('La foto de perfil es obligatoria para registrar un animal.', 'error');
                     return;
                 }
-                
+
                 await this.saveAnimal(animalData, isEditMode ? animalToEdit.id : null);
 
                 if (nameChanged) {
@@ -289,7 +363,7 @@ class AnimalManager {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(animalData)
                         });
-                        
+
                         await fetch('http://localhost:3000/delete-animal-folder', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -361,20 +435,20 @@ class AnimalManager {
                 this.showToast('Ocurrió un error al guardar los datos: ' + error.message, 'error');
             }
         });
-        
+
         const existingOverlay = document.querySelector('.form-overlay');
         if (existingOverlay) {
             document.body.removeChild(existingOverlay);
         }
-        
+
         overlay.appendChild(form);
-        document.body.appendChild(overlay);   
+        document.body.appendChild(overlay);
     }
-    
+
     async saveAnimal(animalData, animalIdToUpdate = null) {
         try {
             let animals = this.dataManager.getAnimals();
-            
+
             if (animalIdToUpdate) {
                 const index = animals.findIndex(a => a.id === animalIdToUpdate);
                 if (index !== -1) {
@@ -383,11 +457,11 @@ class AnimalManager {
             } else {
                 animals.push(animalData);
             }
-            
+
             this.dataManager.setAnimals(animals);
             const saveResult = await this.dataManager.saveAnimalToFile(animalData);
             this.dataManager.saveDataToLocalStorage();
-            
+
             this.dashboardManager.updateDashboard();
             document.dispatchEvent(new CustomEvent('animalAdded'));
             return true;
@@ -395,7 +469,7 @@ class AnimalManager {
             throw error;
         }
     }
-    
+
     saveAnimalPhoto(registryId, filePath) {
         localStorage.setItem(`${this.photoPrefix}${registryId}`, filePath);
     }
@@ -411,45 +485,45 @@ class AnimalManager {
     getAnimalTitlePhoto(registryId) {
         return localStorage.getItem(`${this.titlePhotoPrefix}${registryId}`);
     }
-    
+
     editAnimal(animalId) {
         const animals = this.dataManager.getAnimals();
         const animalToEdit = animals.find(a => a.id === animalId);
         if (animalToEdit) this.showAnimalForm(animalToEdit);
     }
-    
+
     async deleteAnimal(animalId) {
         if (await this.showConfirmation('¿Estás seguro de eliminar este animal?')) {
             try {
                 const animals = this.dataManager.getAnimals();
                 const animal = animals.find(a => a.id === animalId);
-                
+
                 if (!animal) {
                     throw new Error('Animal no encontrado');
                 }
 
                 localStorage.removeItem(`${this.photoPrefix}${animal.registryId}`);
                 localStorage.removeItem(`${this.titlePhotoPrefix}${animal.registryId}`);
-                
+
                 const response = await fetch(`http://localhost:3000/animals/${animalId}`, {
                     method: 'DELETE'
                 });
-                
+
                 if (!response.ok) {
                     throw new Error('Error al eliminar animal del servidor');
                 }
-                
+
                 const updatedAnimals = animals.filter(a => a.id !== animalId);
                 const updatedVaccines = this.dataManager.getVaccines().filter(v => v.animalId !== animalId);
-                
+
                 this.dataManager.setAnimals(updatedAnimals);
                 this.dataManager.setVaccines(updatedVaccines);
                 this.dataManager.saveDataToLocalStorage();
-                
+
                 this.renderAnimals();
                 this.dashboardManager.updateDashboard();
                 document.dispatchEvent(new CustomEvent('animalDeleted'));
-                
+
                 this.showToast('Animal eliminado correctamente', 'success');
             } catch (error) {
                 this.showToast('Ocurrió un error al eliminar el animal: ' + error.message, 'error');
@@ -461,7 +535,7 @@ class AnimalManager {
         const { duration = 3000, showIcon = true } = options;
         let content = showIcon ? `<div class="toast-content"><span class="toast-icon"></span>${message}</div>` : `<div class="toast-content">${message}</div>`;
         if (!showIcon) type = 'no-icon';
-        
+
         Toastify({
             text: content,
             duration: duration,

@@ -1,9 +1,0 @@
-{
-  "id": "A001",
-  "name": "Lola",
-  "registryId": "456/74",
-  "breed": "Angus",
-  "customBreed": "",
-  "weight": 123,
-  "birthDate": "2025-05-30"
-}

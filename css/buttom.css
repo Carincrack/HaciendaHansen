@@ -42,3 +42,17 @@
 .btn-edit i {
     margin-right: 6px; /* Space between icon and text */
 }
+
+
+.btn-confirm-embryo {
+  background-color: #7336b9; /* Color primario */
+  color: #ffffff;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
