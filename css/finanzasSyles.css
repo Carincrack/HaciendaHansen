@@ -44,6 +44,7 @@
 }
 
 #finanzas .section-title {
+
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: 24px;
@@ -89,7 +90,7 @@
    
 }
 
-#finanzas .add-btn {
+#finanzas .add-btn  {
     width: 30%;
     padding: 12px 20px;
     border: none;
@@ -340,7 +341,6 @@
 }
 
 .form-group input {
-    width: 100%;
     padding: var(--spacing-sm) var(--spacing-md);
     border: var(--border-width) solid var(--color-border);
     background: var(--color-bg-light);
@@ -437,3 +437,6 @@
 .balance-neutral {
     color: var(--color-text-light);
 }
+
+
+/*---------------------*/

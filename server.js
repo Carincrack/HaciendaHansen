@@ -26,14 +26,6 @@ const FINANZAS_DIR = path.join(PROJECT_DIR, 'Finanzas');
 const ENTRADAS_DIR = path.join(FINANZAS_DIR, 'entradas');
 const SALIDAS_DIR = path.join(FINANZAS_DIR, 'salidas');
 
-console.log('Ruta de EMBRYO_DIR:', EMBRYO_DIR);
-console.log('Ruta de PROJECT_DIR:', PROJECT_DIR);
-console.log('Ruta de VACCINE_DIR:', VACCINE_DIR);
-console.log('Ruta de ARCHIVOS_DIR:', ARCHIVOS_DIR);
-console.log('Ruta de FINANZAS_DIR:', FINANZAS_DIR);
-console.log('Ruta de ENTRADAS_DIR:', ENTRADAS_DIR);
-console.log('Ruta de SALIDAS_DIR:', SALIDAS_DIR);
-
 const getAnimalDir = (animalName) => path.join(BASE_DIR, animalName);
 const getDataDir = (animalName) => path.join(getAnimalDir(animalName), 'datos');
 const getProfileDir = (animalName) => path.join(getAnimalDir(animalName), 'perfil');
@@ -47,10 +39,8 @@ const storage = multer.diskStorage({
         let targetDir = type === 'profile' ? getProfileDir(animalName) : getTitleDir(animalName);
         try {
             await fs.mkdir(targetDir, { recursive: true });
-            console.log("Directorio destino creado:", targetDir);
             cb(null, targetDir);
         } catch (error) {
-            console.error("Error al crear directorio:", error);
             cb(error, null);
         }
     },
@@ -58,7 +48,6 @@ const storage = multer.diskStorage({
         const registryId = req.body.registryId ? req.body.registryId.replace('/', '_') : `temp_${Date.now()}`;
         const ext = path.extname(file.originalname).toLowerCase();
         const filename = `${registryId}${ext}`;
-        console.log("Nombre de archivo generado:", filename);
         cb(null, filename);
     }
 });
@@ -68,10 +57,8 @@ const fileFilter = (req, file, cb) => {
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
     if (extname && mimetype) {
-        console.log("Procesando archivo válido:", file.originalname);
         cb(null, true);
     } else {
-        console.log("Tipo de archivo no permitido:", file.originalname);
         cb(new Error('Solo se permiten imágenes (jpeg, jpg, png, webp)'), false);
     }
 };
@@ -85,10 +72,8 @@ const vaccineStorage = multer.diskStorage({
     destination: async (req, file, cb) => {
         try {
             await fs.mkdir(ARCHIVOS_DIR, { recursive: true });
-            console.log("Directorio destino creado:", ARCHIVOS_DIR);
             cb(null, ARCHIVOS_DIR);
         } catch (error) {
-            console.error("Error al crear directorio:", error);
             cb(error, null);
         }
     },
@@ -96,7 +81,6 @@ const vaccineStorage = multer.diskStorage({
         const vaccineId = req.body.vaccineId || `temp_${Date.now()}`;
         const ext = path.extname(file.originalname).toLowerCase();
         const filename = `${vaccineId}${ext}`;
-        console.log("Nombre de archivo generado:", filename);
         cb(null, filename);
     }
 });
@@ -106,10 +90,8 @@ const vaccineFileFilter = (req, file, cb) => {
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
     if (extname && mimetype) {
-        console.log("Procesando archivo válido:", file.originalname);
         cb(null, true);
     } else {
-        console.log("Tipo de archivo no permitido:", file.originalname);
         cb(new Error('Solo se permiten imágenes (jpeg, jpg, png, webp) o PDFs'), false);
     }
 };
@@ -125,7 +107,6 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname)));
 app.use('/images', express.static(path.join(PROJECT_DIR, 'images')));
 app.use('/Proyecto_Hacienda_HXX/animal-data', (req, res, next) => {
-    console.log(`Solicitud a: ${req.path}, mapeada a: ${path.join(PROJECT_DIR, 'animal-data', req.path)}`);
     req.url = decodeURI(req.url);
     next();
 }, express.static(path.join(PROJECT_DIR, 'animal-data')));
@@ -134,33 +115,20 @@ app.use('/Proyecto_Hacienda_HXX/data_vacunas/archivos', express.static(ARCHIVOS_
 async function ensureBaseDirs() {
     try {
         await fs.mkdir(PROJECT_DIR, { recursive: true });
-        console.log('Directorio creado:', PROJECT_DIR);
         await fs.mkdir(BASE_DIR, { recursive: true });
-        console.log('Directorio creado:', BASE_DIR);
         await fs.mkdir(VACCINE_DIR, { recursive: true });
-        console.log('Directorio creado:', VACCINE_DIR);
         await fs.mkdir(ARCHIVOS_DIR, { recursive: true });
-        console.log('Directorio creado:', ARCHIVOS_DIR);
         await fs.mkdir(EMBRYO_DIR, { recursive: true });
-        console.log('Directorio creado:', EMBRYO_DIR);
-        await ensureFinanzasDirs(); // Añadimos la creación de directorios de finanzas
-    } catch (error) {
-        console.error('Error al crear estructura de directorios base:', error);
-    }
+        await ensureFinanzasDirs();
+    } catch (error) {}
 }
 
 async function ensureFinanzasDirs() {
     try {
         await fs.mkdir(FINANZAS_DIR, { recursive: true });
-        console.log('Directorio creado:', FINANZAS_DIR);
         await fs.mkdir(ENTRADAS_DIR, { recursive: true });
-        console.log('Directorio creado:', ENTRADAS_DIR);
         await fs.mkdir(SALIDAS_DIR, { recursive: true });
-        console.log('Directorio creado:', SALIDAS_DIR);
-        console.log('Estructura de directorios de finanzas creada');
-    } catch (error) {
-        console.error('Error al crear directorios de finanzas:', error);
-    }
+    } catch (error) {}
 }
 
 ensureBaseDirs();
@@ -181,7 +149,6 @@ app.get('/animals', async (req, res) => {
         try {
             await fs.access(BASE_DIR);
         } catch (error) {
-            console.log('La carpeta base no existe aún');
             return res.json(animals);
         }
         const animalFolders = await fs.readdir(BASE_DIR);
@@ -199,13 +166,10 @@ app.get('/animals', async (req, res) => {
                         animals.push(animalData);
                     }
                 }
-            } catch (error) {
-                console.error(`Error al leer datos de ${folder}:`, error);
-            }
+            } catch (error) {}
         }
         res.json(animals);
     } catch (error) {
-        console.error('Error al cargar animales:', error);
         res.status(500).json({ error: 'Error al cargar los datos' });
     }
 });
@@ -226,33 +190,25 @@ app.post('/animals', async (req, res) => {
         const filePath = path.join(dataDir, fileName);
 
         await fs.writeFile(filePath, JSON.stringify(animalData, null, 2));
-        console.log("Animal guardado en:", filePath);
         res.json({ success: true, filePath });
     } catch (error) {
-        console.error('Error al guardar animal:', error);
         res.status(500).json({ error: 'Error al guardar el animal' });
     }
 });
 
 app.post('/upload-profile-photo', (req, res, next) => {
-    console.log("Solicitud recibida en /upload-profile-photo");
-    console.log("Headers:", req.headers);
-    console.log("Body inicial:", req.body);
     next();
 }, upload, async (req, res) => {
     try {
         if (!req.file) {
-            console.error("No se proporcionó ninguna imagen");
             return res.status(400).json({ error: 'No se proporcionó ninguna imagen' });
         }
         
         const { animalName, type, registryId } = req.body;
-        console.log("Datos recibidos en endpoint:", { animalName, type, registryId, filename: req.file.filename });
 
         if (!animalName || !type || !registryId) {
             const tempPath = req.file.path;
-            await fs.unlink(tempPath).catch(err => console.error("Error al eliminar archivo temporal:", err));
-            console.error("Faltan parámetros obligatorios", { animalName, type, registryId });
+            await fs.unlink(tempPath).catch(() => {});
             return res.status(400).json({ error: 'Faltan parámetros obligatorios' });
         }
 
@@ -263,7 +219,6 @@ app.post('/upload-profile-photo', (req, res, next) => {
             const newPath = path.join(path.dirname(tempPath), newFilename);
             await fs.rename(tempPath, newPath);
             filename = newFilename;
-            console.log(`Archivo renombrado de ${req.file.filename} a ${newFilename}`);
         }
 
         const correctDir = type === 'profile' ? getProfileDir(animalName) : getTitleDir(animalName);
@@ -273,7 +228,6 @@ app.post('/upload-profile-photo', (req, res, next) => {
         if (tempPath !== correctPath) {
             await fs.mkdir(correctDir, { recursive: true });
             await fs.rename(tempPath, correctPath);
-            console.log(`Archivo movido de ${tempPath} a ${correctPath}`);
         }
 
         const relativePath = path.join(
@@ -284,12 +238,10 @@ app.post('/upload-profile-photo', (req, res, next) => {
             filename
         );
         
-        console.log("Ruta relativa generada:", `/${relativePath}`);
         res.json({ success: true, filePath: `/${relativePath}` });
     } catch (error) {
-        console.error('Error al subir la foto:', error);
         if (req.file) {
-            await fs.unlink(req.file.path).catch(err => console.error("Error al eliminar archivo temporal:", err));
+            await fs.unlink(req.file.path).catch(() => {});
         }
         res.status(500).json({ error: 'Error al subir la foto: ' + error.message });
     }
@@ -314,17 +266,13 @@ app.delete('/animals/:id', async (req, res) => {
                         await fs.unlink(filePath);
                         const animalDir = getAnimalDir(folder);
                         await fs.rm(animalDir, { recursive: true, force: true });
-                        console.log("Carpeta eliminada:", animalDir);
                         return res.json({ success: true });
                     }
                 }
-            } catch (error) {
-                console.error(`Error al procesar carpeta ${folder}:`, error);
-            }
+            } catch (error) {}
         }
         res.status(404).json({ error: 'Animal no encontrado' });
     } catch (error) {
-        console.error('Error al eliminar animal:', error);
         res.status(500).json({ error: 'Error al eliminar el animal' });
     }
 });
@@ -339,14 +287,11 @@ app.post('/delete-animal-folder', async (req, res) => {
         try {
             await fs.access(animalDir);
             await fs.rm(animalDir, { recursive: true, force: true });
-            console.log("Carpeta eliminada:", animalDir);
             res.json({ success: true });
         } catch (error) {
-            console.error(`Error al eliminar carpeta ${animalDir}:`, error);
             res.status(404).json({ error: 'Carpeta de animal no encontrada' });
         }
     } catch (error) {
-        console.error('Error al eliminar carpeta de animal:', error);
         res.status(500).json({ error: 'Error al eliminar la carpeta' });
     }
 });
@@ -358,7 +303,6 @@ app.get('/api/vaccines', async (req, res) => {
         try {
             await fs.access(VACCINE_DIR);
         } catch (error) {
-            console.log('La carpeta de vacunas no existe aún');
             return res.json(vaccines);
         }
 
@@ -370,14 +314,11 @@ app.get('/api/vaccines', async (req, res) => {
                 try {
                     const vaccineData = JSON.parse(content);
                     vaccines.push(vaccineData);
-                } catch (parseErr) {
-                    console.error(`Error parseando ${file}:`, parseErr);
-                }
+                } catch (parseErr) {}
             }
         }
         res.json(vaccines);
     } catch (error) {
-        console.error('Error al cargar vacunas:', error);
         res.status(500).json({ error: 'Error al cargar los datos de vacunas' });
     }
 });
@@ -404,10 +345,8 @@ app.post('/api/vaccines/save-per-animal', async (req, res) => {
         };
 
         await fs.writeFile(filePath, JSON.stringify(vaccineRecord, null, 2));
-        console.log('Vacuna guardada en:', filePath);
         res.status(201).json({ success: true, filePath });
     } catch (error) {
-        console.error('Error al guardar vacuna por animal:', error);
         res.status(500).json({ error: 'Error al guardar la vacuna' });
     }
 });
@@ -416,12 +355,6 @@ app.patch('/api/vaccines/:id', async (req, res) => {
     try {
         const vaccineId = req.params.id;
         const { fileName, originalFileName, ...vaccineData } = req.body;
-
-        console.log('Solicitud PATCH recibida:', {
-            vaccineId: vaccineId,
-            originalFileName: originalFileName,
-            newFileName: fileName
-        });
 
         if (!fileName || !originalFileName) {
             return res.status(400).json({ error: 'Falta el nombre del archivo (fileName o originalFileName)' });
@@ -434,18 +367,13 @@ app.patch('/api/vaccines/:id', async (req, res) => {
         try {
             await fs.access(originalFilePath);
             found = true;
-            console.log('Archivo encontrado:', originalFilePath);
 
             if (originalFileName !== fileName) {
                 await fs.rename(originalFilePath, newFilePath);
-                console.log(`Archivo renombrado de ${originalFilePath} a ${newFilePath}`);
             }
 
             await fs.writeFile(newFilePath, JSON.stringify(vaccineData, null, 2));
-            console.log('Vacuna actualizada en:', newFilePath);
-        } catch (error) {
-            console.error('Archivo no encontrado:', originalFilePath, error);
-        }
+        } catch (error) {}
 
         if (!found) {
             return res.status(404).json({ error: 'Registro de vacuna no encontrado' });
@@ -453,7 +381,6 @@ app.patch('/api/vaccines/:id', async (req, res) => {
 
         res.status(200).json({ message: 'Registro de vacuna actualizado', filePath: newFilePath });
     } catch (error) {
-        console.error('Error al actualizar vacuna:', error);
         res.status(500).json({ error: 'Error al actualizar la vacuna' });
     }
 });
@@ -473,10 +400,7 @@ app.delete('/api/vaccines/:id', async (req, res) => {
             await fs.access(filePath);
             await fs.unlink(filePath);
             found = true;
-            console.log('Vacuna eliminada:', filePath);
-        } catch (error) {
-            console.error('Archivo no encontrado:', error);
-        }
+        } catch (error) {}
 
         if (found) {
             res.json({ message: 'Registro de vacuna eliminado' });
@@ -484,7 +408,6 @@ app.delete('/api/vaccines/:id', async (req, res) => {
             res.status(404).json({ error: 'Vacuna no encontrada' });
         }
     } catch (error) {
-        console.error('Error al eliminar vacuna:', error);
         res.status(500).json({ error: 'Error al eliminar la vacuna' });
     }
 });
@@ -492,27 +415,23 @@ app.delete('/api/vaccines/:id', async (req, res) => {
 app.post('/api/vaccines/upload-file', vaccineUpload, async (req, res) => {
     try {
         if (!req.file) {
-            console.error("No se proporcionó ningún archivo");
             return res.status(400).json({ error: 'No se proporcionó ningún archivo' });
         }
 
         const { vaccineId } = req.body;
         if (!vaccineId) {
             const tempPath = req.file.path;
-            await fs.unlink(tempPath).catch(err => console.error("Error al eliminar archivo temporal:", err));
-            console.error("Falta el vaccineId");
+            await fs.unlink(tempPath).catch(() => {});
             return res.status(400).json({ error: 'Falta el vaccineId' });
         }
 
         const filename = req.file.filename;
         const relativePath = path.join('Proyecto_Hacienda_HXX', 'data_vacunas', 'archivos', filename);
 
-        console.log("Archivo subido:", relativePath);
         res.json({ success: true, filePath: `/${relativePath}` });
     } catch (error) {
-        console.error('Error al subir el archivo:', error);
         if (req.file) {
-            await fs.unlink(req.file.path).catch(err => console.error("Error al eliminar archivo temporal:", err));
+            await fs.unlink(req.file.path).catch(() => {});
         }
         res.status(500).json({ error: 'Error al subir el archivo: ' + error.message });
     }
@@ -553,9 +472,7 @@ app.get('/dashboard-stats', async (req, res) => {
                         stats.animalsByBreed[breed] = (stats.animalsByBreed[breed] || 0) + 1;
                     }
                 }
-            } catch (error) {
-                console.error(`Error al procesar datos de ${folder}:`, error);
-            }
+            } catch (error) {}
         }
 
         try {
@@ -596,20 +513,16 @@ app.get('/dashboard-stats', async (req, res) => {
                     }
                 }
             }
-        } catch (error) {
-            console.error('Error al procesar vacunas para estadísticas:', error);
-        }
+        } catch (error) {}
 
         stats.recentVaccines.sort((a, b) => new Date(b.date) - new Date(a.date));
         stats.recentVaccines = stats.recentVaccines.slice(0, 5);
         res.json(stats);
     } catch (error) {
-        console.error('Error al obtener estadísticas del dashboard:', error);
         res.status(500).json({ error: 'Error al obtener estadísticas' });
     }
 });
 
-// Lógica de finanzas integrada
 // Lógica de finanzas integrada
 async function getFinanzasData() {
     await ensureFinanzasDirs();
@@ -624,19 +537,13 @@ async function getFinanzasData() {
                 try {
                     const content = await fs.readFile(filePath, 'utf8');
                     const data = JSON.parse(content);
-                    if (data && data.timestamp) { // Validación básica
+                    if (data && data.timestamp) {
                         entradas.push(data);
-                    } else {
-                        console.warn(`Archivo ${file} ignorado por datos inválidos`);
                     }
-                } catch (parseError) {
-                    console.error(`Error al parsear ${file}:`, parseError);
-                }
+                } catch (parseError) {}
             }
         }
-    } catch (error) {
-        console.error('Error al leer entradas:', error);
-    }
+    } catch (error) {}
 
     try {
         const salidaFiles = await fs.readdir(SALIDAS_DIR).catch(() => []);
@@ -646,63 +553,44 @@ async function getFinanzasData() {
                 try {
                     const content = await fs.readFile(filePath, 'utf8');
                     const data = JSON.parse(content);
-                    if (data && data.timestamp) { // Validación básica
+                    if (data && data.timestamp) {
                         salidas.push(data);
-                    } else {
-                        console.warn(`Archivo ${file} ignorado por datos inválidos`);
                     }
-                } catch (parseError) {
-                    console.error(`Error al parsear ${file}:`, parseError);
-                }
+                } catch (parseError) {}
             }
         }
-    } catch (error) {
-        console.error('Error al leer salidas:', error);
-    }
+    } catch (error) {}
 
-    console.log('Datos de finanzas devueltos:', { entradas, salidas });
     return { entradas, salidas };
 }
 
 io.on('connection', (socket) => {
-    console.log('Cliente conectado:', socket.id);
-
     socket.on('requestFinanzasData', async () => {
         const data = await getFinanzasData();
-        console.log('Datos de finanzas enviados:', data);
         socket.emit('finanzasData', data);
     });
 
     socket.on('addIngreso', async (data) => {
-        console.log('Datos recibidos para ingreso:', data);
         await ensureFinanzasDirs();
         const fileName = `${data.timestamp.replace(/[^a-z0-9]/gi, '_')}.txt`;
         const filePath = path.join(ENTRADAS_DIR, fileName);
         try {
             await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-            console.log('Ingreso guardado en:', filePath);
             io.emit('finanzasData', await getFinanzasData());
-        } catch (error) {
-            console.error('Error al guardar ingreso:', error);
-        }
+        } catch (error) {}
     });
 
     socket.on('addSalida', async (data) => {
-        console.log('Datos recibidos para salida:', data);
         await ensureFinanzasDirs();
         const fileName = `${data.timestamp.replace(/[^a-z0-9]/gi, '_')}.txt`;
         const filePath = path.join(SALIDAS_DIR, fileName);
         try {
             await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-            console.log('Salida guardada en:', filePath);
             io.emit('finanzasData', await getFinanzasData());
-        } catch (error) {
-            console.error('Error al guardar salida:', error);
-        }
+        } catch (error) {}
     });
 
     socket.on('deleteIngreso', async (timestamp) => {
-        console.log('Solicitud de eliminación de ingreso:', timestamp);
         try {
             const entradaFiles = await fs.readdir(ENTRADAS_DIR).catch(() => []);
             let fileToDelete = null;
@@ -716,26 +604,18 @@ io.on('connection', (socket) => {
                             fileToDelete = file;
                             break;
                         }
-                    } catch (parseError) {
-                        console.error(`Error al parsear ${file} durante eliminación:`, parseError);
-                    }
+                    } catch (parseError) {}
                 }
             }
             if (fileToDelete) {
                 const filePath = path.join(ENTRADAS_DIR, fileToDelete);
                 await fs.unlink(filePath);
-                console.log('Ingreso eliminado de:', filePath);
-            } else {
-                console.warn('No se encontró archivo para eliminar con timestamp:', timestamp);
             }
             io.emit('finanzasData', await getFinanzasData());
-        } catch (error) {
-            console.error('Error al eliminar ingreso:', error);
-        }
+        } catch (error) {}
     });
 
     socket.on('deleteSalida', async (timestamp) => {
-        console.log('Solicitud de eliminación de salida:', timestamp);
         try {
             const salidaFiles = await fs.readdir(SALIDAS_DIR).catch(() => []);
             let fileToDelete = null;
@@ -749,28 +629,19 @@ io.on('connection', (socket) => {
                             fileToDelete = file;
                             break;
                         }
-                    } catch (parseError) {
-                        console.error(`Error al parsear ${file} durante eliminación:`, parseError);
-                    }
+                    } catch (parseError) {}
                 }
             }
             if (fileToDelete) {
                 const filePath = path.join(SALIDAS_DIR, fileToDelete);
                 await fs.unlink(filePath);
-                console.log('Salida eliminada de:', filePath);
-            } else {
-                console.warn('No se encontró archivo para eliminar con timestamp:', timestamp);
             }
             io.emit('finanzasData', await getFinanzasData());
-        } catch (error) {
-            console.error('Error al eliminar salida:', error);
-        }
+        } catch (error) {}
     });
 });
 
 // Inicializa el módulo de administración
 new ServerAdmin(io);
 
-server.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+server.listen(PORT);
