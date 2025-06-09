@@ -38,7 +38,7 @@ class ServerAdmin {
             });
 
             socket.on('stopMonitoring', () => {
-                console.log(`Deteniendo monitoreo para: ${socket.id}`);
+             
                 this.clearClientIntervals(socket.id);
             });
 

@@ -12,9 +12,6 @@ const rateLimit = require('express-rate-limit'); // Añadimos rate limiting
 const app = express();
 const PORT = 3000;
 
-// Middleware de límite de solicitudes
-
-
 // Crear el servidor HTTP y montar socket.io
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -25,11 +22,17 @@ const BASE_DIR = path.join(PROJECT_DIR, 'animal-data');
 const VACCINE_DIR = path.join(__dirname, 'data_vacunas');
 const ARCHIVOS_DIR = path.join(VACCINE_DIR, 'archivos');
 const EMBRYO_DIR = path.join(PROJECT_DIR, 'embriones_data');
-console.log('Ruta de EMBRYO_DIR:', EMBRYO_DIR);
+const FINANZAS_DIR = path.join(PROJECT_DIR, 'Finanzas');
+const ENTRADAS_DIR = path.join(FINANZAS_DIR, 'entradas');
+const SALIDAS_DIR = path.join(FINANZAS_DIR, 'salidas');
 
+console.log('Ruta de EMBRYO_DIR:', EMBRYO_DIR);
 console.log('Ruta de PROJECT_DIR:', PROJECT_DIR);
 console.log('Ruta de VACCINE_DIR:', VACCINE_DIR);
 console.log('Ruta de ARCHIVOS_DIR:', ARCHIVOS_DIR);
+console.log('Ruta de FINANZAS_DIR:', FINANZAS_DIR);
+console.log('Ruta de ENTRADAS_DIR:', ENTRADAS_DIR);
+console.log('Ruta de SALIDAS_DIR:', SALIDAS_DIR);
 
 const getAnimalDir = (animalName) => path.join(BASE_DIR, animalName);
 const getDataDir = (animalName) => path.join(getAnimalDir(animalName), 'datos');
@@ -140,9 +143,23 @@ async function ensureBaseDirs() {
         console.log('Directorio creado:', ARCHIVOS_DIR);
         await fs.mkdir(EMBRYO_DIR, { recursive: true });
         console.log('Directorio creado:', EMBRYO_DIR);
-        console.log('Estructura de directorios base creada');
+        await ensureFinanzasDirs(); // Añadimos la creación de directorios de finanzas
     } catch (error) {
         console.error('Error al crear estructura de directorios base:', error);
+    }
+}
+
+async function ensureFinanzasDirs() {
+    try {
+        await fs.mkdir(FINANZAS_DIR, { recursive: true });
+        console.log('Directorio creado:', FINANZAS_DIR);
+        await fs.mkdir(ENTRADAS_DIR, { recursive: true });
+        console.log('Directorio creado:', ENTRADAS_DIR);
+        await fs.mkdir(SALIDAS_DIR, { recursive: true });
+        console.log('Directorio creado:', SALIDAS_DIR);
+        console.log('Estructura de directorios de finanzas creada');
+    } catch (error) {
+        console.error('Error al crear directorios de finanzas:', error);
     }
 }
 
@@ -590,6 +607,165 @@ app.get('/dashboard-stats', async (req, res) => {
         console.error('Error al obtener estadísticas del dashboard:', error);
         res.status(500).json({ error: 'Error al obtener estadísticas' });
     }
+});
+
+// Lógica de finanzas integrada
+// Lógica de finanzas integrada
+async function getFinanzasData() {
+    await ensureFinanzasDirs();
+    const entradas = [];
+    const salidas = [];
+
+    try {
+        const entradaFiles = await fs.readdir(ENTRADAS_DIR).catch(() => []);
+        for (const file of entradaFiles) {
+            if (file.endsWith('.txt')) {
+                const filePath = path.join(ENTRADAS_DIR, file);
+                try {
+                    const content = await fs.readFile(filePath, 'utf8');
+                    const data = JSON.parse(content);
+                    if (data && data.timestamp) { // Validación básica
+                        entradas.push(data);
+                    } else {
+                        console.warn(`Archivo ${file} ignorado por datos inválidos`);
+                    }
+                } catch (parseError) {
+                    console.error(`Error al parsear ${file}:`, parseError);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error al leer entradas:', error);
+    }
+
+    try {
+        const salidaFiles = await fs.readdir(SALIDAS_DIR).catch(() => []);
+        for (const file of salidaFiles) {
+            if (file.endsWith('.txt')) {
+                const filePath = path.join(SALIDAS_DIR, file);
+                try {
+                    const content = await fs.readFile(filePath, 'utf8');
+                    const data = JSON.parse(content);
+                    if (data && data.timestamp) { // Validación básica
+                        salidas.push(data);
+                    } else {
+                        console.warn(`Archivo ${file} ignorado por datos inválidos`);
+                    }
+                } catch (parseError) {
+                    console.error(`Error al parsear ${file}:`, parseError);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error al leer salidas:', error);
+    }
+
+    console.log('Datos de finanzas devueltos:', { entradas, salidas });
+    return { entradas, salidas };
+}
+
+io.on('connection', (socket) => {
+    console.log('Cliente conectado:', socket.id);
+
+    socket.on('requestFinanzasData', async () => {
+        const data = await getFinanzasData();
+        console.log('Datos de finanzas enviados:', data);
+        socket.emit('finanzasData', data);
+    });
+
+    socket.on('addIngreso', async (data) => {
+        console.log('Datos recibidos para ingreso:', data);
+        await ensureFinanzasDirs();
+        const fileName = `${data.timestamp.replace(/[^a-z0-9]/gi, '_')}.txt`;
+        const filePath = path.join(ENTRADAS_DIR, fileName);
+        try {
+            await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+            console.log('Ingreso guardado en:', filePath);
+            io.emit('finanzasData', await getFinanzasData());
+        } catch (error) {
+            console.error('Error al guardar ingreso:', error);
+        }
+    });
+
+    socket.on('addSalida', async (data) => {
+        console.log('Datos recibidos para salida:', data);
+        await ensureFinanzasDirs();
+        const fileName = `${data.timestamp.replace(/[^a-z0-9]/gi, '_')}.txt`;
+        const filePath = path.join(SALIDAS_DIR, fileName);
+        try {
+            await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+            console.log('Salida guardada en:', filePath);
+            io.emit('finanzasData', await getFinanzasData());
+        } catch (error) {
+            console.error('Error al guardar salida:', error);
+        }
+    });
+
+    socket.on('deleteIngreso', async (timestamp) => {
+        console.log('Solicitud de eliminación de ingreso:', timestamp);
+        try {
+            const entradaFiles = await fs.readdir(ENTRADAS_DIR).catch(() => []);
+            let fileToDelete = null;
+            for (const file of entradaFiles) {
+                if (file.endsWith('.txt')) {
+                    const filePath = path.join(ENTRADAS_DIR, file);
+                    try {
+                        const content = await fs.readFile(filePath, 'utf8');
+                        const data = JSON.parse(content);
+                        if (data.timestamp === timestamp) {
+                            fileToDelete = file;
+                            break;
+                        }
+                    } catch (parseError) {
+                        console.error(`Error al parsear ${file} durante eliminación:`, parseError);
+                    }
+                }
+            }
+            if (fileToDelete) {
+                const filePath = path.join(ENTRADAS_DIR, fileToDelete);
+                await fs.unlink(filePath);
+                console.log('Ingreso eliminado de:', filePath);
+            } else {
+                console.warn('No se encontró archivo para eliminar con timestamp:', timestamp);
+            }
+            io.emit('finanzasData', await getFinanzasData());
+        } catch (error) {
+            console.error('Error al eliminar ingreso:', error);
+        }
+    });
+
+    socket.on('deleteSalida', async (timestamp) => {
+        console.log('Solicitud de eliminación de salida:', timestamp);
+        try {
+            const salidaFiles = await fs.readdir(SALIDAS_DIR).catch(() => []);
+            let fileToDelete = null;
+            for (const file of salidaFiles) {
+                if (file.endsWith('.txt')) {
+                    const filePath = path.join(SALIDAS_DIR, file);
+                    try {
+                        const content = await fs.readFile(filePath, 'utf8');
+                        const data = JSON.parse(content);
+                        if (data.timestamp === timestamp) {
+                            fileToDelete = file;
+                            break;
+                        }
+                    } catch (parseError) {
+                        console.error(`Error al parsear ${file} durante eliminación:`, parseError);
+                    }
+                }
+            }
+            if (fileToDelete) {
+                const filePath = path.join(SALIDAS_DIR, fileToDelete);
+                await fs.unlink(filePath);
+                console.log('Salida eliminada de:', filePath);
+            } else {
+                console.warn('No se encontró archivo para eliminar con timestamp:', timestamp);
+            }
+            io.emit('finanzasData', await getFinanzasData());
+        } catch (error) {
+            console.error('Error al eliminar salida:', error);
+        }
+    });
 });
 
 // Inicializa el módulo de administración

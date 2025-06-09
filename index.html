@@ -8,7 +8,7 @@
     <title>Sistema de Gestión Ganadera - Hacienda Hansen</title>
 
     <!-- Hojas de estilo locales -->
-     <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/VaccineForm.css">
     <link rel="stylesheet" href="css/StyleTosty.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -298,24 +298,19 @@
 
                 <div id="finanzas" class="section">
                     <h2 class="section-title">Finanzas</h2>
-                    <!-- cargará dinámicamente -->
-                     <div class="content-main-finanza">
-                        
-                        <div class="entrdas-content">
+                       <!-- cargará dinámicamente -->
+                    <div class="content-main-finanza">
 
-                            <button>
-                                Nueva entrada +
-                            </button>
+                        <div class="entrdas-content">
+                            <button class="add-btn">Nueva entrada +</button>
+                            <div class="facturas-scroll" id="entradas-facturas"></div>
                         </div>
                         <div class="salidas-content">
-                            <button>
-                              Nueva salida
-                            </button>
+                            <button class="add-btn">Nueva salida -</button>
+                            <div class="facturas-scroll" id="salidas-facturas"></div>
                         </div>
-
-                        <input type="number">
-                     </div>
-                    
+                    </div>
+                    <input class="resul-finces" type="number" readonly>
                 </div>
 
                 <!--Seccion de Admin Ing Axel-->
@@ -459,7 +454,9 @@
     <script src="js/adminMenuVisibility.js" defer></script>
     <script src="js/EmbrioManager.js"></script>
     <script src="js/admin.js"></script>
-    
+    <script src="js/finanzasManager.js" defer></script>
+    <script src="finanzasServer.js"></script>
+
     <script src="/socket.io/socket.io.js"></script>.
     <!-- Consolidate Toastify CDN -->
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
