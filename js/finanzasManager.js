@@ -236,7 +236,7 @@ class FinanzasManager {
             <h2 style="margin: 0 0 var(--spacing-lg) 0; font-size: var(--font-size-xl); font-weight: 600; color: var(--color-text); text-align: center; border-bottom: var(--border-width) solid var(--color-border); padding-bottom: var(--spacing-md);">Detalles</h2>
             <div class="detail-content">
                 <p><strong>Descripción:</strong> ${item.descripcion}</p>
-                <p><strong>Monto:</strong> $${item.monto.toFixed(2)}</p>
+                <p><strong>Monto:</strong> ₡${item.monto.toFixed(2)}</p>
                 <p><strong>Fecha:</strong> ${new Date(item.timestamp).toLocaleString()}</p>
             </div>
             <div class="form-actions" style="display: flex; justify-content: center; gap: var(--spacing-sm); margin-top: var(--spacing-lg);">

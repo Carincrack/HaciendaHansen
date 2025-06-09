@@ -97,10 +97,14 @@ class AnimalManager {
 
     showFullScreenPhoto(registryId) {
         const photoUrl = this.getAnimalPhoto(registryId);
-        if (!photoUrl) {
-            this.showToast('No se encontró la foto de perfil.', 'error');
+        const titlePhotoUrl = this.getAnimalTitlePhoto(registryId);
+        if (!photoUrl && !titlePhotoUrl) {
+            this.showToast('No se encontraron fotos para este animal.', 'error');
             return;
         }
+
+        let currentIndex = 0;
+        const images = [photoUrl || '', titlePhotoUrl || ''].filter(url => url);
 
         const overlay = document.createElement('div');
         overlay.className = 'fullscreen-overlay';
@@ -111,12 +115,53 @@ class AnimalManager {
             z-index: 1001;
         `;
 
-        const fullScreenImg = document.createElement('img');
-        fullScreenImg.src = photoUrl;
-        fullScreenImg.style.cssText = `
-            max-width: 90%; max-height: 90%;
-            border-radius: 4px; cursor: pointer;
+        const imageContainer = document.createElement('div');
+        imageContainer.style.cssText = `
+            position: relative; display: flex; justify-content: center; align-items: center;
+            width: 90%; height: 90%; max-width: 1200px; max-height: 800px;
         `;
+
+        const fullScreenImg = document.createElement('img');
+        fullScreenImg.src = images[currentIndex] || '/images/placeholder.jpg';
+        fullScreenImg.style.cssText = `
+            max-width: 100%; max-height: 100%;
+            border-radius: 4px; cursor: pointer;
+            object-fit: contain; /* Asegura que la imagen se ajuste sin distorsionarse */
+        `;
+
+        // Botón Izquierda
+        const prevButton = document.createElement('button');
+        prevButton.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+        prevButton.style.cssText = `
+            position: absolute; left: 10px;
+            background-color: rgba(255, 255, 255, 0.8); color: black;
+            border: none; border-radius: 50%; padding: 10px;
+            cursor: pointer; font-size: 1.5rem; z-index: 1002;
+            transition: opacity 0.3s ease;
+        `;
+        prevButton.addEventListener('click', () => {
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            fullScreenImg.src = images[currentIndex] || '/images/placeholder.jpg';
+        });
+        prevButton.addEventListener('mouseover', () => prevButton.style.opacity = '1');
+        prevButton.addEventListener('mouseout', () => prevButton.style.opacity = '0.7');
+
+        // Botón Derecha
+        const nextButton = document.createElement('button');
+        nextButton.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+        nextButton.style.cssText = `
+            position: absolute; right: 10px;
+            background-color: rgba(255, 255, 255, 0.8); color: black;
+            border: none; border-radius: 50%; padding: 10px;
+            cursor: pointer; font-size: 1.5rem; z-index: 1002;
+            transition: opacity 0.3s ease;
+        `;
+        nextButton.addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % images.length;
+            fullScreenImg.src = images[currentIndex] || '/images/placeholder.jpg';
+        });
+        nextButton.addEventListener('mouseover', () => nextButton.style.opacity = '1');
+        nextButton.addEventListener('mouseout', () => nextButton.style.opacity = '0.7');
 
         const closeButton = document.createElement('button');
         closeButton.innerHTML = '✖';
@@ -130,9 +175,16 @@ class AnimalManager {
             document.body.removeChild(overlay);
         });
 
-        overlay.appendChild(fullScreenImg);
+        imageContainer.appendChild(prevButton);
+        imageContainer.appendChild(fullScreenImg);
+        imageContainer.appendChild(nextButton);
+        overlay.appendChild(imageContainer);
         overlay.appendChild(closeButton);
         document.body.appendChild(overlay);
+
+        // Ajustar opacidad inicial de los botones
+        prevButton.style.opacity = '0.7';
+        nextButton.style.opacity = '0.7';
 
         // Cerrar con clic fuera de la imagen
         overlay.addEventListener('click', (e) => {

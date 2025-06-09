@@ -447,15 +447,27 @@ class EmbrioManager {
                         </tr>
                         <tr>
                             <td style="padding: 8px; border: 1px solid var(--color-border);">Receptor:</td>
-                            <td style="padding: 8px; border: 1px solid var(--color-border);">${receptorCow.registryId ? `<img src="${receptorPhoto}" alt="${receptorCow.name}" class="animal-photo" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : ''} ${receptorCow.name}</td>
+                            <td style="padding: 8px; border: 1px solid var(--color-border); position: relative;">
+                                <img src="${receptorPhoto}" alt="${receptorCow.name}" style="max-width: 100px; max-height: 100px; border-radius: 4px;">
+                                ${receptorCow.registryId ? `<button class="view-photo-btn" data-registry-id="${receptorCow.registryId}" style="position: absolute; bottom: 6px; right: 6px; background-color: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; padding: 5px; cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-eye"></i></button>` : ''}
+                                ${receptorCow.name}
+                            </td>
                         </tr>
                         <tr>
                             <td style="padding: 8px; border: 1px solid var(--color-border);">Donadora/Madre:</td>
-                            <td style="padding: 8px; border: 1px solid var(--color-border);">${donorMotherCow.registryId ? `<img src="${donorMotherPhoto}" alt="${donorMotherCow.name}" class="animal-photo" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : ''} ${donorMotherCow.name}</td>
+                            <td style="padding: 8px; border: 1px solid var(--color-border); position: relative;">
+                                <img src="${donorMotherPhoto}" alt="${donorMotherCow.name}" style="max-width: 100px; max-height: 100px; border-radius: 4px;">
+                                ${donorMotherCow.registryId ? `<button class="view-photo-btn" data-registry-id="${donorMotherCow.registryId}" style="position: absolute; bottom: 6px; right: 6px; background-color: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; padding: 5px; cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-eye"></i></button>` : ''}
+                                ${donorMotherCow.name}
+                            </td>
                         </tr>
                         <tr>
                             <td style="padding: 8px; border: 1px solid var(--color-border);">Donadora/Padre:</td>
-                            <td style="padding: 8px; border: 1px solid var(--color-border);">${donorFatherCow.registryId ? `<img src="${donorFatherPhoto}" alt="${donorFatherCow.name}" class="animal-photo" style="max-width: 100px; max-height: 100px; border-radius: 4px;">` : ''} ${donorFatherCow.name}</td>
+                            <td style="padding: 8px; border: 1px solid var(--color-border); position: relative;">
+                                <img src="${donorFatherPhoto}" alt="${donorFatherCow.name}" style="max-width: 100px; max-height: 100px; border-radius: 4px;">
+                                ${donorFatherCow.registryId ? `<button class="view-photo-btn" data-registry-id="${donorFatherCow.registryId}" style="position: absolute; bottom: 6px; right: 6px; background-color: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; padding: 5px; cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-eye"></i></button>` : ''}
+                                ${donorFatherCow.name}
+                            </td>
                         </tr>
                         <tr>
                             <td style="padding: 8px; border: 1px solid var(--color-border);">Confirmación de Preñez:</td>
@@ -470,6 +482,13 @@ class EmbrioManager {
                 overlay.appendChild(modalContent);
                 document.body.appendChild(overlay);
 
+                modalContent.querySelectorAll('.view-photo-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const registryId = btn.dataset.registryId;
+                        this.showFullScreenPhoto(registryId);
+                    });
+                });
+
                 modalContent.querySelector('.btn-cancel').addEventListener('click', () => {
                     if (overlay && document.body.contains(overlay)) {
                         document.body.removeChild(overlay);
@@ -479,6 +498,61 @@ class EmbrioManager {
 
             loadPhotosAndShowModal();
         }
+    }
+
+    showFullScreenPhoto(registryId) {
+        const photoUrl = localStorage.getItem(`${this.photoPrefix}${registryId}`);
+        if (!photoUrl) {
+            this.showToast('No se encontró la foto de esta vaca.', 'error');
+            return;
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'fullscreen-overlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1001;
+        `;
+
+        const imageContainer = document.createElement('div');
+        imageContainer.style.cssText = `
+            position: relative; display: flex; justify-content: center; align-items: center;
+            width: 90%; height: 90%; max-width: 1200px; max-height: 800px;
+        `;
+
+        const fullScreenImg = document.createElement('img');
+        fullScreenImg.src = photoUrl;
+        fullScreenImg.style.cssText = `
+            max-width: 100%; max-height: 100%;
+            border-radius: 4px; cursor: pointer;
+            object-fit: contain;
+        `;
+
+        const closeButton = document.createElement('button');
+        closeButton.innerHTML = '✖';
+        closeButton.style.cssText = `
+            position: absolute; top: 10px; right: 10px;
+            background-color: rgba(255, 255, 255, 0.8); color: black;
+            border: none; border-radius: 50%; padding: 5px 10px;
+            cursor: pointer; font-size: 1.5rem;
+        `;
+        closeButton.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+        });
+
+        imageContainer.appendChild(fullScreenImg);
+        overlay.appendChild(imageContainer);
+        overlay.appendChild(closeButton);
+        document.body.appendChild(overlay);
+
+        // Cerrar con clic fuera de la imagen
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+            }
+        });
     }
 
     showToast(message, type = 'info', options = {}) {
@@ -499,7 +573,7 @@ class EmbrioManager {
                 background: 'transparent', 
                 boxShadow: 'none', 
                 padding: '0',
-                zIndex: 1001 // Aseguramos que el toast esté por encima del formulario
+                zIndex: 1001
             }
         }).showToast();
     }
